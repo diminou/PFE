@@ -66,9 +66,11 @@ extract_article <- cmpfun(function(string) {
 
 extract_category <- cmpfun(function(string){
   parts <- splitTripleXml(string)
-  part <- head(Filter(is_article, parts), 1)
+  part <- tail(Filter(is_category_resource, parts), 1)
   elements <- harvest(strsplit(part, "/")[[1]])
   atoms <- harvest(strsplit(tail(elements, 1), ":")[[1]])
+  print("atoms :")
+  print(atoms)
   return(tail(atoms, 1))
 })
 
@@ -80,8 +82,8 @@ print(parts)
 print(length(parts[[1]]))
 print(extract_article(line))
 print(extract_category(line))
-ca <- getOrCreateNode(db, "article", title = extract_article(line))
-cc <- getOrCreateNode(db, "category", label = extract_category(line))
+ca <- createNode(db, "article", title = extract_article(line))
+cc <- createNode(db, "category", label = extract_category(line))
 
 addConstraint(db, "article", "title")
 addConstraint(db, "category", "label")
@@ -93,18 +95,27 @@ query = "MATCH (p:category)
          WHERE p.label = \"Algèbre_linéaire\"
          RETURN p"
 
+
+
 res <- getNodes(db, query)
 
 conn <- file(paste(HOME, fileName, sep = "/"), open = "r")
+counter100 <- 0
+counter <- 0
 while(length(line <- readLines(conn, 1)) > 0 ){
   possibleError <- tryCatch({
     article_name <- extract_article(line)
     category_name <- extract_category(line)
+    counter <- counter + 1
   }, error=function(e) e)
   if(!inherits(possibleError, "error")) {
     ca <- getOrCreateNode(db, "article", title = article_name)
     cc <- getOrCreateNode(db, "category", label = category_name)
     createRel(ca, "is_under", cc)
+  }
+  if(counter%/%100 > counter100){
+    print(counter)
+    counter100 <- counter %/% 100
   }
 }
 close(conn)
