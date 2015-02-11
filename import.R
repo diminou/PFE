@@ -80,8 +80,8 @@ print(parts)
 print(length(parts[[1]]))
 print(extract_article(line))
 print(extract_category(line))
-ca <- createNode(db, "article", title = extract_article(line))
-cc <- createNode(db, "category", label = extract_category(line))
+ca <- getOrCreateNode(db, "article", title = extract_article(line))
+cc <- getOrCreateNode(db, "category", label = extract_category(line))
 
 addConstraint(db, "article", "title")
 addConstraint(db, "category", "label")
@@ -89,6 +89,11 @@ createRel(ca, "is_under", cc )
 close(conn)
 
 
+query = "MATCH (p:category) 
+         WHERE p.label = \"Algèbre_linéaire\"
+         RETURN p"
+
+res <- getNodes(db, query)
 
 conn <- file(paste(HOME, fileName, sep = "/"), open = "r")
 while(length(line <- readLines(conn, 1)) > 0 ){
