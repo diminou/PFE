@@ -5,11 +5,17 @@ install.packages("stringr")
 install.packages("R.oo")
 install.packages("Rcpp11")
 devtools::install_github("Rcpp11/attributes")
+devtools::install_github("Rcpp11/Rcpp11")
 
 library(RNeo4j)
 library(compiler)
 library(R.oo)
-library(Rcpp11)
+library(Rcpp)
+
+sourceCpp(paste(PFE, "import.cpp", sep="/"))
+getBracketedExps("sdf<asdfasdfa>sdfg<asdf>asda.")
+getResource("http://blabla.xxx/resource/Catégorie:testé")
+print(outputString())
 
 db = startGraph("127.0.0.1:7474/db/data/")
 
@@ -80,25 +86,15 @@ extract_category <- cmpfun(function(string){
 conn <- file(paste(HOME, fileName, sep = "/"), open = "r")
 line <- readLines(conn, 1)
 line <- readLines(conn, 1)
-parts <- harvest4(strsplit(line, "[<]|[>]")[[1]])
-print(parts)
-print(length(parts[[1]]))
-print(extract_article(line))
-print(extract_category(line))
-ca <- createNode(db, "article", title = extract_article(line))
-cc <- createNode(db, "category", label = extract_category(line))
-
+ca <- createNode(db, "article", title = extractArticle(line))
+cc <- createNode(db, "category", label = extractCategory(line))
 addConstraint(db, "article", "title")
 addConstraint(db, "category", "label")
 createRel(ca, "is_under", cc )
 close(conn)
 
-attributes::sourceCpp(paste(PFE, "import.cpp", sep="/"))
-getFirstBracketedExp("sdf<asdfasdfa>sdfg<asdf>asda.")
 
-print(readFirstLine(paste(HOME, fileName, sep = "/")))
 
-outputString()
 
 query = "MATCH (p:category) 
          WHERE p.label = \"Algèbre_linéaire\"
@@ -113,18 +109,16 @@ counter100 <- 0
 counter <- 0
 while(length(line <- readLines(conn, 1)) > 0 ){
   possibleError <- tryCatch({
-    article_name <- extract_article(line)
-    category_name <- extract_category(line)
-    counter <- counter + 1
-  }, error=function(e) e)
-  if(!inherits(possibleError, "error")) {
+    article_name <- extractArticle(line)
+    category_name <- extractCategory(line)
     ca <- getOrCreateNode(db, "article", title = article_name)
     cc <- getOrCreateNode(db, "category", label = category_name)
     createRel(ca, "is_under", cc)
-  }
-  if(counter%/%100 > counter100){
-    print(counter)
-    counter100 <- counter %/% 100
-  }
+    counter <- counter + 1
+    if(counter%/%100 > counter100){
+      print(counter)
+      counter100 <- counter %/% 100
+    }
+  }, error=function(e) e)
 }
 close(conn)

@@ -24,8 +24,17 @@ void printChars(const std::string& infix)
 }
 
 //[[Rcpp::export]]
-std::string getFirstBracketedExp(std::string& line)
+std::string sTos(String line)
 {
+  std::string str = line;
+  return str;
+}
+
+
+//[[Rcpp::export]]
+std::vector<std::string> getBracketedExps(std::string& line)
+{
+  std::vector<std::string> result;
   const char *exp = line.c_str();
   std::string value = "";
   bool flag = false;
@@ -38,35 +47,55 @@ std::string getFirstBracketedExp(std::string& line)
     if(c == '>')
     {
       flag = false;
-      break;
+      if(value.size() > 0)
+      {
+        result.push_back(value);
+        value = "" ;
+      }
     }
-    if(flag)
+    if(flag && c != '<')
     {
-      value.append(&c);
+      
+      value+=c;
     }
   }
-  /*while(*exp!='\0')
-  {
-    if(*exp == '<')
-    {
-      flag = true;
-    }
-    if(*exp == '>')
-    {
-      flag = false;
-      break;
-    }
-    if(flag)
-    {
-      value.append(exp);
-    }
-    *exp++;
-   }*/
-   if(flag || value.size()==0)
+   if(flag || result.size()==0)
    {
      throw Rcpp::exception("invalid string");
    }
-   return value;
+   return result;
+}
+
+//[[Rcpp::export]]
+std::string getResource(std::string str)
+{
+  std::reverse(str.begin(), str.end());
+  std::string result;
+  for(char & c : str)
+  {
+    if(c == '/' || c == ':')
+    {
+      break;
+    }
+    else 
+    {
+      result += c;
+    }
+  }
+  reverse(result.begin(), result.end());
+  return result;
+}
+
+//[[Rcpp::export]]
+std::string extractArticle(std::string line)
+{
+  return getResource(getBracketedExps(line).front());
+}
+
+//[[Rcpp::export]]
+std::string extractCategory(std::string line)
+{
+  return getResource(getBracketedExps(line).back());
 }
 
 //[[Rcpp::export]]
