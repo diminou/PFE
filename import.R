@@ -3,9 +3,7 @@ setwd(PFE)
 source(paste(getwd(), "utils.R", sep="/"))
 install.packages("stringr")
 install.packages("R.oo")
-install.packages("Rcpp11")
-devtools::install_github("Rcpp11/attributes")
-devtools::install_github("Rcpp11/Rcpp11")
+Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
 
 library(RNeo4j)
 library(compiler)
@@ -84,13 +82,22 @@ extract_category <- cmpfun(function(string){
 })
 
 conn <- file(paste(HOME, fileName, sep = "/"), open = "r")
-line <- readLines(conn, 1)
-line <- readLines(conn, 1)
-ca <- createNode(db, "article", title = extractArticle(line))
-cc <- createNode(db, "category", label = extractCategory(line))
 addConstraint(db, "article", "title")
 addConstraint(db, "category", "label")
-createRel(ca, "is_under", cc )
+line <- readLines(conn, 1)
+line <- readLines(conn, 1)
+query1 <- extractArticleMQ(line)
+query2 <- extractCategoryMQ(line)
+query3 <- extractIs_underMQ(line)
+print(query1)
+print(query2)
+print(query3)
+cypher(db, query1)
+cypher(db, query2)
+cypher(db, query3)
+#ca <- createNode(db, "article", title = extractArticle(line))
+#cc <- createNode(db, "category", label = extractCategory(line))
+#createRel(ca, "is_under", cc )
 close(conn)
 
 
@@ -99,8 +106,9 @@ close(conn)
 query = "MATCH (p:category) 
          WHERE p.label = \"Algèbre_linéaire\"
          RETURN p"
+query = "merge (cat:ct {name:'numbers'})"
 
-
+cypher(db, query)
 
 res <- getNodes(db, query)
 
@@ -108,17 +116,18 @@ conn <- file(paste(HOME, fileName, sep = "/"), open = "r")
 counter100 <- 0
 counter <- 0
 while(length(line <- readLines(conn, 1)) > 0 ){
-  possibleError <- tryCatch({
-    article_name <- extractArticle(line)
-    category_name <- extractCategory(line)
-    ca <- getOrCreateNode(db, "article", title = article_name)
-    cc <- getOrCreateNode(db, "category", label = category_name)
-    createRel(ca, "is_under", cc)
+    tryCatch({
+      query1 <- extractArticleMQ(line)
+      query2 <- extractCategoryMQ(line)
+      query3 <- extractIs_underMQ(line)
+      cypher(db, query1)
+      cypher(db, query2)
+      cypher(db, query3)
+    }, error=function(e){})
     counter <- counter + 1
     if(counter%/%100 > counter100){
       print(counter)
       counter100 <- counter %/% 100
     }
-  }, error=function(e) e)
 }
 close(conn)

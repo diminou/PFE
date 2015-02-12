@@ -98,6 +98,54 @@ std::string extractCategory(std::string line)
   return getResource(getBracketedExps(line).back());
 }
 
+std::string produceArticleMQ(std::string title)
+{
+  std::string result = "merge (node:article {title:'";
+  result+=title;
+  result+="'})";
+  return result;
+}
+
+std::string produceCategoryMQ(std::string label)
+{
+  std::string result = "merge (node:category {label:'";
+  result+=label;
+  result+="'})";
+  return result;
+}
+
+std::string produceIs_underMQ(std::string aTitle, std::string cLabel)
+{
+  std::string result = "match(article:article {title:'";
+  result += aTitle;
+  result += "'}), (cat:category {label:'";
+  result += cLabel;
+  result += "'}) merge (article)-[:is_under]->(cat)";
+  return result;
+}
+
+//[[Rcpp::export]]
+std::string extractArticleMQ(std::string line)
+{
+  std::string title = extractArticle(line);
+  return produceArticleMQ(title);
+}
+
+//[[Rcpp::export]]
+std::string extractCategoryMQ(std::string line)
+{
+  std::string label = extractCategory(line);
+  return produceCategoryMQ(label);
+}
+
+//[[Rcpp::export]]
+std::string extractIs_underMQ(std::string line)
+{
+  std::string title = extractArticle(line);
+  std::string label = extractCategory(line);
+  return produceIs_underMQ(title, label);
+}
+
 //[[Rcpp::export]]
 std::string readFirstLine(const char* filepath){
   std::ifstream instream(filepath);
