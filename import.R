@@ -3,10 +3,13 @@ setwd(PFE)
 source(paste(getwd(), "utils.R", sep="/"))
 install.packages("stringr")
 install.packages("R.oo")
+install.packages("Rcpp11")
+devtools::install_github("Rcpp11/attributes")
 
 library(RNeo4j)
 library(compiler)
 library(R.oo)
+library(Rcpp11)
 
 db = startGraph("127.0.0.1:7474/db/data/")
 
@@ -90,6 +93,12 @@ addConstraint(db, "category", "label")
 createRel(ca, "is_under", cc )
 close(conn)
 
+attributes::sourceCpp(paste(PFE, "import.cpp", sep="/"))
+getFirstBracketedExp("sdf<asdfasdfa>sdfg<asdf>asda.")
+
+print(readFirstLine(paste(HOME, fileName, sep = "/")))
+
+outputString()
 
 query = "MATCH (p:category) 
          WHERE p.label = \"Algèbre_linéaire\"
