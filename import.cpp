@@ -61,7 +61,7 @@ std::vector<std::string> getBracketedExps(std::string& line)
   }
    if(flag || result.size()==0)
    {
-     throw Rcpp::exception("invalid string");
+     return {};
    }
    return result;
 }
@@ -84,6 +84,51 @@ std::string getResource(std::string str)
   }
   reverse(result.begin(), result.end());
   return result;
+}
+
+std::string getLinkTypeCat(std::string str)
+{
+  std::reverse(str.begin(), str.end());
+  std::string result;
+  for(char & c : str)
+  {
+    if(c == '#')
+    {
+      break;
+    }
+    else 
+    {
+      result += c;
+    }
+  }
+  reverse(result.begin(), result.end());
+  if(result != "broader" && result != "related")
+  {
+    return "";
+  }
+  return result;
+}
+
+//[[Rcpp::export]]
+std::string catLinkLine(std::string str)
+{
+  std::vector<std::string> bracketedExps = getBracketedExps(str);
+  if(bracketedExps.size()!=3)
+  {
+    return "";
+  } else {
+    std::string cat1 = getResource(bracketedExps[0]);
+    std::string cat2 = getResource(bracketedExps[2]);
+    std::string link = getLinkTypeCat(bracketedExps[1]);
+    
+    if(cat1.size()>0 && cat2.size()>0 && link.size()>0)
+    {
+      return cat1+","+link+","+cat2;
+    } else {
+      return "";
+    }
+  }
+  
 }
 
 //[[Rcpp::export]]
@@ -170,9 +215,33 @@ void closeIfstream(std::ifstream *str)
   str->close();
 }
 
+//[[Rcpp::export]]
+void categoryLinksToCsv(std::string in_path, std:: string out_path)
+{
+  std::ifstream instream(in_path);
+  std::ofstream ostream(out_path);
+  std::string str;
+  std::string result;
+  ostream << "cat0,link,cat1"<<std::endl;
+  while(std::getline(instream, str))
+  {
+    result = catLinkLine(str);
+    if(result.size() > 0)
+    {
+      ostream << result << std::endl;
+    }
+  }
+  instream.close();
+  ostream.close();
+}
 
-
-
+//[[Rcpp::export]]
+void acceptCharVect(std::vector<std::string> arg)
+{
+  for(int i=0; i < arg.size(); i++){
+    Rcout << arg[i] << std::endl;
+  }
+}
 
 
 /*** R

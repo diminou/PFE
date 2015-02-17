@@ -3,12 +3,19 @@ setwd(PFE)
 source(paste(getwd(), "utils.R", sep="/"))
 install.packages("stringr")
 install.packages("R.oo")
+install.packages("tm")
+install.packages("SnowballC")
+install.packages("RTextTools")
+
 Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
 
 library(RNeo4j)
 library(compiler)
 library(R.oo)
 library(Rcpp)
+library(tm)
+library(SnowballC)
+library(RTextTools)
 
 sourceCpp(paste(PFE, "import.cpp", sep="/"))
 getBracketedExps("sdf<asdfasdfa>sdfg<asdf>asda.")
@@ -22,6 +29,51 @@ clear(db)
 HOME<-Sys.getenv("HOME")
 fileName <- ".pfe/article_categories_fr.ttl"
 csv_a_c_path <- paste(HOME, ".pfe/ModifiedData/article_categories_fr.csv", sep = "/")
+
+category_relations <- paste(HOME, ".pfe/skos_categories_fr.ttl", sep = "/")
+category_relations_csv <- paste(HOME, ".pfe/skos_categories_fr.csv", sep = "/")
+categoryLinksToCsv(category_relations, category_relations_csv)
+
+
+toSpace <- content_transformer ( function ( x, pattern ) gsub (pattern, " ", x))
+testSource <- VCorpus(VectorSource(c("Ce n'est qu'un test.", "Ceci est un autre test.")), readerControl = list(language = "french"))
+stopwords("french")
+testSource <- tm_map(testSource, toSpace, "'")
+testSource <- tm_map(testSource, removePunctuation)
+testSource <- tm_map(testSource, stripWhitespace)
+testSource <- tm_map(testSource, content_transformer(tolower))
+testSource <- tm_map(testSource, removeWords, stopwords("french"))
+stemDocument(testSource[[1]], language="french")
+toSpace(VectorSource("blabla d'Argagnan blabla2."), "'")
+
+wordStem("Par exemple, ceci n'est qu'un test. Proliferation armistice proposition .", language = "french")
+acceptCharVect(unlist(strsplit(removePunctuation("bla, blabla, exclamation!
+                           Encore une ligne, bla."), "\\s")))
+
+
+inspect(testSource)
+
+toSpace("Par exemple, ceci n'est qu'un test.", "\'")
+
+getTransformations()
+
+tmm <- tm_map(testSource, stemDocument)
+inspect(tmm)
+inspect(DocumentTermMatrix(testSource))
+
+conn <- file(category_relations, open = "r")
+line <- readLines(conn, 1)
+print(catLinkLine(line))
+line <- readLines(conn, 1)
+print(catLinkLine(line))
+line <- readLines(conn, 1)
+print(catLinkLine(line))
+line <- readLines(conn, 1)
+print(catLinkLine(line))
+line <- readLines(conn, 1)
+print(catLinkLine(line))
+close(conn)
+
 
 query = "MATCH (p:category) 
          WHERE p.label = \"Algèbre_linéaire\"
@@ -51,6 +103,14 @@ query = paste("USING PERIODIC COMMIT 1000
          MATCH (a:article {title: row.article})
          MATCH (cat:category {label: row.categorie})
          MERGE (a)-[:is_under]->(cat)", sep = "")
+
+cypher(db, query)
+
+query = paste("USING PERIODIC COMMIT 1000
+         LOAD CSV WITH HEADERS FROM \"file:", category_relations_csv, "\" AS row
+         MATCH (c0:category {label: row.cat0})
+         MATCH (c1:category {label: row.cat1})
+         MERGE (c0)-[r:relates {type:row.link}]->(c1)", sep = "")
 
 cypher(db, query)
 
