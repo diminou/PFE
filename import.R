@@ -1,5 +1,8 @@
 PFE<-Sys.getenv("PFE")
 setwd(PFE)
+Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
+HOME<-Sys.getenv("HOME")
+
 source(paste(getwd(), "utils.R", sep="/"))
 install.packages("stringr")
 install.packages("R.oo")
@@ -7,7 +10,7 @@ install.packages("tm")
 install.packages("SnowballC")
 install.packages("RTextTools")
 
-Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
+
 
 library(RNeo4j)
 library(compiler)
@@ -21,12 +24,15 @@ sourceCpp(paste(PFE, "import.cpp", sep="/"))
 getBracketedExps("sdf<asdfasdfa>sdfg<asdf>asda.")
 getResource("http://blabla.xxx/resource/Catégorie:testé")
 print(outputString())
+print(sendStringVector())
+
 
 db = startGraph("127.0.0.1:7474/db/data/")
 
 clear(db)
 
-HOME<-Sys.getenv("HOME")
+
+
 fileName <- ".pfe/article_categories_fr.ttl"
 csv_a_c_path <- paste(HOME, ".pfe/ModifiedData/article_categories_fr.csv", sep = "/")
 
@@ -34,7 +40,22 @@ category_relations <- paste(HOME, ".pfe/skos_categories_fr.ttl", sep = "/")
 category_relations_csv <- paste(HOME, ".pfe/skos_categories_fr.csv", sep = "/")
 categoryLinksToCsv(category_relations, category_relations_csv)
 
+short_abstracts <- paste(HOME, ".pfe/short_abstracts_fr.ttl", sep = "/")
+short_abstracts_csv <- paste(HOME, ".pfe/short_abstracts_fr.csv", sep = "/")
+printHead(short_abstracts, 15)
 
+conn <- file(short_abstracts, open = "r")
+line <- readLines(conn, 1)
+print(extractArticle(line))
+print(parseAbstract(line))
+line <- readLines(conn, 1)
+print(parseAbstract(line))
+print(extractArticle(line))
+close(conn)
+
+
+
+toSpace <- function ( x, pattern ) gsub (pattern, " ", x)
 toSpace <- content_transformer ( function ( x, pattern ) gsub (pattern, " ", x))
 testSource <- VCorpus(VectorSource(c("Ce n'est qu'un test.", "Ceci est un autre test.")), readerControl = list(language = "french"))
 stopwords("french")
@@ -47,15 +68,53 @@ stemDocument(testSource[[1]], language="french")
 toSpace(VectorSource("blabla d'Argagnan blabla2."), "'")
 
 wordStem("Par exemple, ceci n'est qu'un test. Proliferation armistice proposition .", language = "french")
-acceptCharVect(unlist(strsplit(removePunctuation("bla, blabla, exclamation!
-                           Encore une ligne, bla."), "\\s")))
+wrds <- unlist(strsplit(stripWhitespace(removePunctuation("bla, blabla, exclamation!
+                           Encore une ligne, bla.")), "\\s"))
 
-
+makeAbstractCsv("Ablation", c("un", "deux", "deux"))
 inspect(testSource)
 
-toSpace("Par exemple, ceci n'est qu'un test.", "\'")
+toSpace("Par exemple, ceci n'est qu'un test.", "'")
+removeWords("Par exemple, ceci n'est qu'un test.", stopwords("french"))
+wordStem(c("exemple", "absolutisme"), language = "french")
 
 getTransformations()
+write("article, word, count", short_abstracts_csv, sep = "\n", append = T)
+abstractToCsv <- function(inpath, outpath) {
+  conn <- file(inpath, open = "r")
+  write("article,word,count", outpath, sep = "\n", append = F)
+  counter100 <- 0
+  counter <- 0
+  while(length(line <- readLines(conn, 1)) > 0 ){
+    tryCatch({
+      title <- extractArticle(line)
+      content <- parseAbstract(line)
+      if(length(title) > 0  && length(content) > 0) {
+        content <- toSpace(content, "'")
+        content <- removePunctuation(content)
+        content <- tolower(content)
+        content <- removeWords(content, stopwords("french"))
+        content <- stripWhitespace(content)
+        words <- unlist(strsplit(content, "\\s"))
+        words <- wordStem(words, language = "french")
+        chunk <- makeAbstractCsv(title, words)
+        if(chunk != ""){
+          write(chunk, outpath, append = T)
+        }
+        
+      }
+    }, error=function(e){print("eeeeeeeeeeeeeeeeeeeee")
+                         print(e)})
+    counter <- counter + 1
+    if(counter%/%100 > counter100){
+      print(counter)
+      counter100 <- counter %/% 100
+    }
+  }
+  close(conn)
+}
+
+abstractToCsv(short_abstracts, short_abstracts_csv)
 
 tmm <- tm_map(testSource, stemDocument)
 inspect(tmm)
@@ -114,6 +173,21 @@ query = paste("USING PERIODIC COMMIT 1000
 
 cypher(db, query)
 
+query = "CREATE CONSTRAINT ON (w:word) ASSERT w.stem IS UNIQUE"
+cypher(db, query)
+
+query = paste("USING PERIODIC COMMIT 1000
+         LOAD CSV WITH HEADERS FROM \"file:", short_abstracts_csv, "\" AS row
+         MERGE (:word {stem:row.word})", sep = "")
+cypher(db, query)
+
+query = paste("USING PERIODIC COMMIT 1000
+         LOAD CSV WITH HEADERS FROM \"file:", category_relations_csv, "\" AS row
+         MATCH (a:article {title: row.article})
+         MATCH (w:word {stem: row.word})
+         MERGE (a)-[r:contains {count:toInt(row.count)}]->(w)", sep = "")
+
+cypher(db, query)
 
 has_angle_brackets <- cmpfun( function( string ) {
   return ( grepl ("<", string, fixed = T) & grepl(">", string, fixed = T))
@@ -216,3 +290,5 @@ while(length(line <- readLines(conn, 1)) > 0 ){
     }
 }
 close(conn)
+
+

@@ -69,6 +69,10 @@ std::vector<std::string> getBracketedExps(std::string& line)
 //[[Rcpp::export]]
 std::string getResource(std::string str)
 {
+  if(str.size() == 0)
+  {
+    return "";
+  }
   std::reverse(str.begin(), str.end());
   std::string result;
   for(char & c : str)
@@ -134,7 +138,15 @@ std::string catLinkLine(std::string str)
 //[[Rcpp::export]]
 std::string extractArticle(std::string line)
 {
-  return getResource(getBracketedExps(line).front());
+  if(line.size() == 0){
+    return "";
+  }
+  std::vector<std::string> bExps = getBracketedExps(line);
+  if(bExps.size() == 0)
+  {
+    return "";
+  }
+  return getResource(bExps.front());
 }
 
 //[[Rcpp::export]]
@@ -243,6 +255,74 @@ void acceptCharVect(std::vector<std::string> arg)
   }
 }
 
+//[[Rcpp::export]]
+void printHead(std::string path, int numLines)
+{
+  std::ifstream instream(path);
+  std::string str;
+  for(int j = 0; j < numLines; j++)
+  {
+    std::getline(instream, str);
+    Rcout << str << std::endl << std::endl;
+  }
+  instream.close();
+}
+
+//[[Rcpp::export]]
+std::string parseAbstract(std::string line)
+{
+  std::string result;
+  const char *exp = line.c_str();
+  std::string value = "";
+  bool flag = false;
+  for(char & c : line)
+  {
+    if(c == '\"')
+    {
+      flag = !flag;
+      if(!flag)
+      {
+        return value;
+      }
+    }
+    
+    if(flag && c != '\"')
+    {
+      
+      value+=c;
+    }
+  }
+
+   return "";
+}
+
+//[[Rcpp::export]]
+
+std::vector<std::string> sendStringVector()
+{
+  return {"string1", "string2", "string3"};
+}
+
+//[[Rcpp::export]]
+std::string makeAbstractCsv(std::string title, std::vector<std::string> keywords)
+{
+  std::string result;
+  std::map<std::string, int> table;
+  std::map<std::string, int>::iterator iter;
+  for(int i = 0; i < keywords.size(); i++)
+  {
+    table[keywords[i]]++;
+  }
+   for (iter = table.begin(); iter != table.end(); iter++) {
+           if(iter -> first != ""){
+             result += title + "," + iter -> first +"," + std::to_string(iter->second) + "\n";
+           }
+           
+           //....
+           // Make sure you don't modify table here or the iterators will not work as you expect
+   }
+   return result;
+}
 
 /*** R
 # This is R code
