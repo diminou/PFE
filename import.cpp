@@ -268,7 +268,7 @@ void categoryLinksToCsv(std::string in_path, std:: string out_path)
 }
 
 //[[Rcpp::export]]
-void artCatToCsv(std::string in_path, std:: string out_path)
+void artCatToCsv(std::string in_path, std::string out_path)
 {
   std::ifstream instream(in_path);
   std::ofstream ostream(out_path);

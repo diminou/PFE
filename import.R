@@ -36,8 +36,8 @@ clear(db)
 fileName <- ".pfe/article_categories_fr.ttl"
 #csv_a_c_path <- paste(HOME, ".pfe/ModifiedData/article_categories_fr.csv", sep = "/")
 
-art_cat <- paste(HOME, "./pfe/article_categories_fr.ttl", sep = "/")
-art_cat_csv <- paste(HOME, "./pfe/article_categories_fr.csv", sep = "/")
+art_cat <- paste(HOME, "/.pfe/article_categories_fr.ttl", sep = "/")
+art_cat_csv <- paste(HOME, "/.pfe/article_categories_fr.csv", sep = "/")
 artCatToCsv(art_cat, art_cat_csv)
 
 category_relations <- paste(HOME, ".pfe/skos_categories_fr.ttl", sep = "/")
