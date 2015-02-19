@@ -188,7 +188,7 @@ query = paste("USING PERIODIC COMMIT 1000
          LOAD CSV WITH HEADERS FROM \"file:", short_abstracts_csv, "\" AS row
          MATCH (a:article {title: row.article})
          MATCH (w:word {stem: row.word})
-         MERGE (a)-[r:contains {count:toInt(row.count)}]->(w)", sep = "")
+         MERGE (a)-[r:contains {count:row.count}]->(w)", sep = "")
 
 cypher(db, query)
 
