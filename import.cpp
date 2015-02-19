@@ -280,7 +280,7 @@ void artCatToCsv(std::string in_path, std::string out_path)
     result = artCatLine(str);
     if(result.size() > 0)
     {
-      ostream << result << std::endl;
+      ostream <<result << std::endl ;
     }
   }
   instream.close();
@@ -361,6 +361,7 @@ std::string makeAbstractCsv(std::string title, std::vector<std::string> keywords
            //....
            // Make sure you don't modify table here or the iterators will not work as you expect
    }
+   result.pop_back();
    return result;
 }
 

@@ -60,7 +60,6 @@ close(conn)
 
 
 toSpace <- function ( x, pattern ) gsub (pattern, " ", x)
-toSpace <- content_transformer ( function ( x, pattern ) gsub (pattern, " ", x))
 testSource <- VCorpus(VectorSource(c("Ce n'est qu'un test.", "Ceci est un autre test.")), readerControl = list(language = "french"))
 stopwords("french")
 testSource <- tm_map(testSource, toSpace, "'")
@@ -103,7 +102,7 @@ abstractToCsv <- function(inpath, outpath) {
         words <- wordStem(words, language = "french")
         chunk <- makeAbstractCsv(title, words)
         if(chunk != ""){
-          write(chunk, outpath, append = T)
+          write(chunk, outpath, sep = "", append = T)
         }
         
       }
@@ -186,7 +185,7 @@ query = paste("USING PERIODIC COMMIT 1000
 cypher(db, query)
 
 query = paste("USING PERIODIC COMMIT 1000
-         LOAD CSV WITH HEADERS FROM \"file:", category_relations_csv, "\" AS row
+         LOAD CSV WITH HEADERS FROM \"file:", short_abstracts_csv, "\" AS row
          MATCH (a:article {title: row.article})
          MATCH (w:word {stem: row.word})
          MERGE (a)-[r:contains {count:toInt(row.count)}]->(w)", sep = "")
