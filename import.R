@@ -34,7 +34,11 @@ clear(db)
 
 
 fileName <- ".pfe/article_categories_fr.ttl"
-csv_a_c_path <- paste(HOME, ".pfe/ModifiedData/article_categories_fr.csv", sep = "/")
+#csv_a_c_path <- paste(HOME, ".pfe/ModifiedData/article_categories_fr.csv", sep = "/")
+
+art_cat <- paste(HOME, "./pfe/article_categories_fr.ttl", sep = "/")
+art_cat_csv <- paste(HOME, "./pfe/article_categories_fr.csv", sep = "/")
+artCatToCsv(art_cat, art_cat_csv)
 
 category_relations <- paste(HOME, ".pfe/skos_categories_fr.ttl", sep = "/")
 category_relations_csv <- paste(HOME, ".pfe/skos_categories_fr.csv", sep = "/")
@@ -146,19 +150,19 @@ query = "CREATE CONSTRAINT ON (c:category) ASSERT c.label IS UNIQUE"
 cypher(db, query)
 
 query = paste("USING PERIODIC COMMIT 1000
-         LOAD CSV WITH HEADERS FROM \"file:", csv_a_c_path,"\" AS row
+         LOAD CSV WITH HEADERS FROM \"file:", art_cat_csv,"\" AS row
          MERGE (:article {title:row.article})", sep = "")
 
 cypher(db, query)
 
 query = paste("USING PERIODIC COMMIT 1000
-         LOAD CSV WITH HEADERS FROM \"file:", csv_a_c_path, "\" AS row
+         LOAD CSV WITH HEADERS FROM \"file:", art_cat_csv, "\" AS row
          MERGE (:category {label:row.categorie})", sep = "")
 
 cypher(db, query)
 
 query = paste("USING PERIODIC COMMIT 1000
-         LOAD CSV WITH HEADERS FROM \"file:", csv_a_c_path, "\" AS row
+         LOAD CSV WITH HEADERS FROM \"file:", art_cat_csv, "\" AS row
          MATCH (a:article {title: row.article})
          MATCH (cat:category {label: row.categorie})
          MERGE (a)-[:is_under]->(cat)", sep = "")

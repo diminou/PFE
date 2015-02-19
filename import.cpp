@@ -135,6 +135,26 @@ std::string catLinkLine(std::string str)
   
 }
 
+std::string artCatLine(std::string str)
+{
+  std::vector<std::string> bracketedExps = getBracketedExps(str);
+  if(bracketedExps.size()!=3)
+  {
+    return "";
+  } else {
+    std::string art = getResource(bracketedExps[0]);
+    std::string cat = getResource(bracketedExps[2]);
+    
+    if(art.size()>0 && cat.size()>0)
+    {
+      return art+","+cat;
+    } else {
+      return "";
+    }
+  }
+  
+}
+
 //[[Rcpp::export]]
 std::string extractArticle(std::string line)
 {
@@ -238,6 +258,26 @@ void categoryLinksToCsv(std::string in_path, std:: string out_path)
   while(std::getline(instream, str))
   {
     result = catLinkLine(str);
+    if(result.size() > 0)
+    {
+      ostream << result << std::endl;
+    }
+  }
+  instream.close();
+  ostream.close();
+}
+
+//[[Rcpp::export]]
+void artCatToCsv(std::string in_path, std:: string out_path)
+{
+  std::ifstream instream(in_path);
+  std::ofstream ostream(out_path);
+  std::string str;
+  std::string result;
+  ostream << "article,categorie"<<std::endl;
+  while(std::getline(instream, str))
+  {
+    result = artCatLine(str);
     if(result.size() > 0)
     {
       ostream << result << std::endl;
