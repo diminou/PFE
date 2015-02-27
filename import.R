@@ -2,15 +2,15 @@ PFE<-Sys.getenv("PFE")
 setwd(PFE)
 Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
 HOME<-Sys.getenv("HOME")
+print(HOME)
 
 source(paste(getwd(), "utils.R", sep="/"))
-install.packages("stringr")
-install.packages("R.oo")
-install.packages("tm")
-install.packages("SnowballC")
-install.packages("RTextTools")
-
-
+# install.packages("RNeo4j")
+# install.packages("stringr")
+# install.packages("R.oo")
+# install.packages("tm")
+# install.packages("SnowballC")
+# install.packages("RTextTools")
 
 library(RNeo4j)
 library(compiler)
@@ -26,12 +26,9 @@ getResource("http://blabla.xxx/resource/Catégorie:testé")
 print(outputString())
 print(sendStringVector())
 
-
 db = startGraph("127.0.0.1:7474/db/data/")
 
 clear(db)
-
-
 
 fileName <- ".pfe/article_categories_fr.ttl"
 #csv_a_c_path <- paste(HOME, ".pfe/ModifiedData/article_categories_fr.csv", sep = "/")
@@ -118,6 +115,53 @@ abstractToCsv <- function(inpath, outpath) {
 }
 
 abstractToCsv(short_abstracts, short_abstracts_csv)
+
+abstractToCsvInParts <- function(inpath, outpath, lengthPart) {
+  dir = paste(HOME,"/.pfe/short_abstracts_fr",sep="")
+  dir.create(dir)
+  outpath <-paste(dir,"short_abstracts_fr",sep="/")
+  conn <- file(inpath, open = "r")
+  counter100 <- 0
+  counter <- 0
+  counterLengthPart <- 0
+  counterParts <- 0
+  write("article,word,count", paste(paste(outpath,counterParts,sep=""),".csv",sep=""), sep = "\n",append=F)
+  while(length(line <- readLines(conn, 1)) > 0 ){
+    tryCatch({
+      title <- extractArticle(line)
+      content <- parseAbstract(line)
+      if(length(title) > 0  && length(content) > 0) {
+        content <- toSpace(content, "'")
+        content <- removePunctuation(content)
+        content <- tolower(content)
+        content <- removeWords(content, stopwords("french"))
+        content <- stripWhitespace(content)
+        words <- unlist(strsplit(content, "\\s"))
+        words <- wordStem(words, language = "french")
+        chunk <- makeAbstractCsv(title, words)
+        if(chunk != ""){
+          write(chunk,  paste(paste(outpath,counterParts,sep=""),".csv",sep=""), sep = "", append = T)
+        }
+      }
+    }, error=function(e){print("eeeeeeeeeeeeeeeeeeeee")
+                  print(e)})
+    counter <- counter + 1
+    counterLengthPart <- counterLengthPart + 1
+    if(counter%/%100 > counter100){
+      print(counter)
+      counter100 <- counter %/% 100
+    }
+    if(counterLengthPart == lengthPart){
+      counterLengthPart <- 0
+      counterParts <- counterParts + 1
+      write("article,word,count", paste(paste(outpath,counterParts,sep=""),".csv",sep=""), sep = "\n", append=F)
+    }
+  }
+  close(conn)
+}
+
+abstractToCsvInParts(short_abstracts, short_abstracts_csv, 30000)
+
 
 tmm <- tm_map(testSource, stemDocument)
 inspect(tmm)
