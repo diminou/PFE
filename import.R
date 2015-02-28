@@ -195,13 +195,11 @@ cypher(db, query)
 query = paste("USING PERIODIC COMMIT 1000
          LOAD CSV WITH HEADERS FROM \"file:", art_cat_csv,"\" AS row
          MERGE (:article {title:row.article})", sep = "")
-
 cypher(db, query)
 
 query = paste("USING PERIODIC COMMIT 1000
          LOAD CSV WITH HEADERS FROM \"file:", art_cat_csv, "\" AS row
          MERGE (:category {label:row.categorie})", sep = "")
-
 cypher(db, query)
 
 query = paste("USING PERIODIC COMMIT 1000
@@ -228,13 +226,51 @@ query = paste("USING PERIODIC COMMIT 1000
          MERGE (:word {stem:row.word})", sep = "")
 cypher(db, query)
 
-query = paste("USING PERIODIC COMMIT 1000
-         LOAD CSV WITH HEADERS FROM \"file:", short_abstracts_csv, "\" AS row
+
+saveBddPart <- function(part){
+  dir = paste(HOME,"/.pfe/short_abstracts_fr",sep="")
+  outpath <-paste(dir,"short_abstracts_fr",sep="/")
+  
+  query = paste("USING PERIODIC COMMIT 1000
+         LOAD CSV WITH HEADERS FROM \"file:", paste(paste(outpath,i,sep=""),".csv",sep=""), "\" AS row
+         MERGE (:word {stem:row.word})", sep = "")
+  cypher(db, query)
+  print(paste(file," imported"))
+}
+for(i in 0:37){
+  saveBddPart(i)
+}
+
+saveBddBisPart <- function(part){
+  dir = paste(HOME,"/.pfe/short_abstracts_fr",sep="")
+  outpath <-paste(dir,"short_abstracts_fr",sep="/")
+  file <- paste(paste(outpath,i,sep=""),".csv",sep="")
+    query = paste("USING PERIODIC COMMIT 1000
+         LOAD CSV WITH HEADERS FROM \"file:", file, "\" AS row
          MATCH (a:article {title: row.article})
          MATCH (w:word {stem: row.word})
          MERGE (a)-[r:contains {count:row.count}]->(w)", sep = "")
-
-cypher(db, query)
+  cypher(db, query)
+  print(paste(file," imported"))
+}
+for(i in 0:6){
+  saveBddBisPart(i)
+}
+for(i in 7:13){
+  saveBddBisPart(i)
+}
+for(i in 14:20){
+  saveBddBisPart(i)
+}
+for(i in 21:27){
+  saveBddBisPart(i)
+}
+for(i in 28:34){
+  saveBddBisPart(i)
+}
+for(i in 34:37){ # vérifier qu'il y a bien 37 fichiers créés
+  saveBddBisPart(i)
+}
 
 has_angle_brackets <- cmpfun( function( string ) {
   return ( grepl ("<", string, fixed = T) & grepl(">", string, fixed = T))
