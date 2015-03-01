@@ -1,17 +1,21 @@
+
+### Recuperation des variables environnement ###
 PFE<-Sys.getenv("PFE")
 setwd(PFE)
 Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
 HOME<-Sys.getenv("HOME")
 print(HOME)
 
+### Installation des packages ###
 source(paste(getwd(), "utils.R", sep="/"))
-# install.packages("RNeo4j")
-# install.packages("stringr")
-# install.packages("R.oo")
-# install.packages("tm")
-# install.packages("SnowballC")
-# install.packages("RTextTools")
+install.packages("RNeo4j")
+install.packages("stringr")
+install.packages("R.oo")
+install.packages("tm")
+install.packages("SnowballC")
+install.packages("RTextTools")
 
+### Importation des packages ###
 library(RNeo4j)
 library(compiler)
 library(R.oo)
@@ -20,16 +24,23 @@ library(tm)
 library(SnowballC)
 library(RTextTools)
 
+### Compilation et importation de import.cpp ###
 sourceCpp(paste(PFE, "import.cpp", sep="/"))
 getBracketedExps("sdf<asdfasdfa>sdfg<asdf>asda.")
 getResource("http://blabla.xxx/resource/Catégorie:testé")
 print(outputString())
 print(sendStringVector())
 
+### Connexion avec Neo4j ###
 db = startGraph("127.0.0.1:7474/db/data/")
 
+### ALERTE! cette ligne va effacer toutes les donnees dans Neo4j ###
+### Initialisation de la base de donnees ###
 clear(db)
 
+
+### Definition des chemins  et transformation en CSV###
+### excepte short_abstracts ###
 fileName <- ".pfe/article_categories_fr.ttl"
 #csv_a_c_path <- paste(HOME, ".pfe/ModifiedData/article_categories_fr.csv", sep = "/")
 
@@ -45,6 +56,7 @@ short_abstracts <- paste(HOME, ".pfe/short_abstracts_fr.ttl", sep = "/")
 short_abstracts_csv <- paste(HOME, ".pfe/short_abstracts_fr.csv", sep = "/")
 printHead(short_abstracts, 15)
 
+### Petit test de lecture ###
 conn <- file(short_abstracts, open = "r")
 line <- readLines(conn, 1)
 print(extractArticle(line))
@@ -55,7 +67,7 @@ print(extractArticle(line))
 close(conn)
 
 
-
+### Test de text mining avec tm ###
 toSpace <- function ( x, pattern ) gsub (pattern, " ", x)
 testSource <- VCorpus(VectorSource(c("Ce n'est qu'un test.", "Ceci est un autre test.")), readerControl = list(language = "french"))
 stopwords("french")
@@ -79,43 +91,48 @@ removeWords("Par exemple, ceci n'est qu'un test.", stopwords("french"))
 wordStem(c("exemple", "absolutisme"), language = "french")
 
 getTransformations()
-write("article, word, count", short_abstracts_csv, sep = "\n", append = T)
-abstractToCsv <- function(inpath, outpath) {
-  conn <- file(inpath, open = "r")
-  write("article,word,count", outpath, sep = "\n", append = F)
-  counter100 <- 0
-  counter <- 0
-  while(length(line <- readLines(conn, 1)) > 0 ){
-    tryCatch({
-      title <- extractArticle(line)
-      content <- parseAbstract(line)
-      if(length(title) > 0  && length(content) > 0) {
-        content <- toSpace(content, "'")
-        content <- removePunctuation(content)
-        content <- tolower(content)
-        content <- removeWords(content, stopwords("french"))
-        content <- stripWhitespace(content)
-        words <- unlist(strsplit(content, "\\s"))
-        words <- wordStem(words, language = "french")
-        chunk <- makeAbstractCsv(title, words)
-        if(chunk != ""){
-          write(chunk, outpath, sep = "", append = T)
-        }
-        
-      }
-    }, error=function(e){print("eeeeeeeeeeeeeeeeeeeee")
-                         print(e)})
-    counter <- counter + 1
-    if(counter%/%100 > counter100){
-      print(counter)
-      counter100 <- counter %/% 100
-    }
-  }
-  close(conn)
-}
 
-abstractToCsv(short_abstracts, short_abstracts_csv)
+### NE PAS EXECUTER ###
+### Ecriture de short abstracts en CSV ###
+# write("article, word, count", short_abstracts_csv, sep = "\n", append = T)
+# abstractToCsv <- function(inpath, outpath) {
+#   conn <- file(inpath, open = "r")
+#   write("article,word,count", outpath, sep = "\n", append = F)
+#   counter100 <- 0
+#   counter <- 0
+#   while(length(line <- readLines(conn, 1)) > 0 ){
+#     tryCatch({
+#       title <- extractArticle(line)
+#       content <- parseAbstract(line)
+#       if(length(title) > 0  && length(content) > 0) {
+#         content <- toSpace(content, "'")
+#         content <- removePunctuation(content)
+#         content <- tolower(content)
+#         content <- removeWords(content, stopwords("french"))
+#         content <- stripWhitespace(content)
+#         words <- unlist(strsplit(content, "\\s"))
+#         words <- wordStem(words, language = "french")
+#         chunk <- makeAbstractCsv(title, words)
+#         if(chunk != ""){
+#           write(chunk, outpath, sep = "", append = T)
+#         }
+#         
+#       }
+#     }, error=function(e){print("eeeeeeeeeeeeeeeeeeeee")
+#                          print(e)})
+#     counter <- counter + 1
+#     if(counter%/%100 > counter100){
+#       print(counter)
+#       counter100 <- counter %/% 100
+#     }
+#   }
+#   close(conn)
+# }
 
+### NE PAS EXECUTER ###
+# abstractToCsv(short_abstracts, short_abstracts_csv)
+
+### Transformation de short_abstracts en csv par parties ###
 abstractToCsvInParts <- function(inpath, outpath, lengthPart) {
   dir = paste(HOME,"/.pfe/short_abstracts_fr",sep="")
   dir.create(dir)
@@ -160,9 +177,10 @@ abstractToCsvInParts <- function(inpath, outpath, lengthPart) {
   close(conn)
 }
 
+### Appel de la transformation de abstractToCsvInParts ###
 abstractToCsvInParts(short_abstracts, short_abstracts_csv, 30000)
 
-
+### TESTS { ###
 tmm <- tm_map(testSource, stemDocument)
 inspect(tmm)
 inspect(DocumentTermMatrix(testSource))
@@ -179,7 +197,7 @@ print(catLinkLine(line))
 line <- readLines(conn, 1)
 print(catLinkLine(line))
 close(conn)
-
+### } /TESTS ###
 
 query = "MATCH (p:category) 
          WHERE p.label = \"Algèbre_linéaire\"
@@ -221,10 +239,11 @@ cypher(db, query)
 query = "CREATE CONSTRAINT ON (w:word) ASSERT w.stem IS UNIQUE"
 cypher(db, query)
 
-query = paste("USING PERIODIC COMMIT 1000
-         LOAD CSV WITH HEADERS FROM \"file:", short_abstracts_csv, "\" AS row
-         MERGE (:word {stem:row.word})", sep = "")
-cypher(db, query)
+### NE PAS EXECUTER ###
+#query = paste("USING PERIODIC COMMIT 1000
+#         LOAD CSV WITH HEADERS FROM \"file:", short_abstracts_csv, "\" AS row
+#         MERGE (:word {stem:row.word})", sep = "")
+#cypher(db, query)
 
 
 saveBddPart <- function(part){
@@ -253,6 +272,10 @@ saveBddBisPart <- function(part){
   cypher(db, query)
   print(paste(file," imported"))
 }
+
+
+### Execution decoupee afin de controler le nombre de fichiers a importer ###
+### HASHTAG SAUCE ###
 for(i in 0:6){
   saveBddBisPart(i)
 }
