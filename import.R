@@ -8,12 +8,7 @@ print(HOME)
 
 ### Installation des packages ###
 source(paste(getwd(), "utils.R", sep="/"))
-install.packages("RNeo4j")
-install.packages("stringr")
-install.packages("R.oo")
-install.packages("tm")
-install.packages("SnowballC")
-install.packages("RTextTools")
+
 
 ### Importation des packages ###
 library(RNeo4j)
