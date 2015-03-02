@@ -9,4 +9,9 @@ library(httr)
 library(devtools)
 devtools::install_github("nicolewhite/RNeo4j")
 
-
+install.packages("RNeo4j")
+install.packages("stringr")
+install.packages("R.oo")
+install.packages("tm")
+install.packages("SnowballC")
+install.packages("RTextTools")
