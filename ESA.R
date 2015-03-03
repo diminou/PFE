@@ -1,4 +1,5 @@
-
+PFE<-Sys.getenv("PFE")
+source(paste(PFE, "requetesNeo4j.R", sep = "/"))
 # Libaiies utiles pour les fction utilsées venant de requetesNEo4j.R et import.R 
 library(tm)
 library(SnowballC)
@@ -7,7 +8,7 @@ library(RNeo4j)
 #install.packages("devtools")
 # devtools::install_github("nicolewhite/RNeo4j")
 
-
+db = startGraph("127.0.0.1:7474/db/data/")
 #  tf time frequency du mot dans le doc, nb nb de doc, df document frequency du mot
 TFIDF <- function(tf, nb, df){
   return (tf *log(nb/df))
@@ -38,19 +39,24 @@ sim_cos <- function(v1, v2){
 
 
 # nb de doc 
-
+nbDocs <- function(){
+  q = "match(a:article) return count(a)"
+  return(cypher(db, q)[1,1])
+  
+}
 
 # retourne le vecteur semantique du mot mot (vecteur numérique)
 MotSemantInterp <- function(mot){
   ArtFrWor=getArticlesFromWord(mot)
   n = nrow(ArtFrWor)
   df = n 
+  nDocs = nbDocs()
   s <- rep(0,n)
   for(i in 1:n){
-    tf = 1 + log(ArtFrWor[i,2]) 
-    s[i] <- TFIDF(tf, 1, df)
+    tf = 1 + log(as.numeric(ArtFrWor[i,2])) 
+    s[i] <- TFIDF(tf, nDocs, df)
   }
-  return s
+  return(s)
 }
 
 

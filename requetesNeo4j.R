@@ -78,7 +78,7 @@ result
 
 # Fonction retournant les mots stemmatisés liés à une catégorie
 # input : le label d'une catégorie
-getWordsFromCategory(label){
+getWordsFromCategory <- function(label){
   queryW <- paste(paste("MATCH(c:category {label:'",label,sep=""),"'})--(a:article)--(w:word) RETURN w",sep="")
   resultW <- getNodes(db,queryW)
   stem <- sapply(resultW, function(p) p$stem)
