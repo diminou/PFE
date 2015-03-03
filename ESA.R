@@ -1,12 +1,13 @@
 PFE<-Sys.getenv("PFE")
 source(paste(PFE, "requetesNeo4j.R", sep = "/"))
+# install.packages("devtools")
+# devtools::install_github("nicolewhite/RNeo4j")
 # Libaiies utiles pour les fction utilsées venant de requetesNEo4j.R et import.R 
 library(tm)
 library(SnowballC)
 library(RTextTools)
 library(RNeo4j)
-#install.packages("devtools")
-# devtools::install_github("nicolewhite/RNeo4j")
+
 
 db = startGraph("127.0.0.1:7474/db/data/")
 #  tf time frequency du mot dans le doc, nb nb de doc, df document frequency du mot
@@ -45,19 +46,36 @@ nbDocs <- function(){
   
 }
 
-# retourne le vecteur semantique du mot mot (vecteur numérique)
+nombreDoc <- nbDocs()
+
+# retourne la liste(nom des doc dans lequel le mot est présent, vecteur semantique du mot) 
 MotSemantInterp <- function(mot){
-  ArtFrWor=getArticlesFromWord(mot)
+  ArtFrWor=getArticlesFromWord(wordStem(mot, language = "french"))
   n = nrow(ArtFrWor)
   df = n 
-  nDocs = nbDocs()
+  nDocs = nombreDoc
   s <- rep(0,n)
+  nom <- rep("", n)
   for(i in 1:n){
     tf = 1 + log(as.numeric(ArtFrWor[i,2])) 
+    nom[i] <- ArtFrWor[i,1]
     s[i] <- TFIDF(tf, nDocs, df)
   }
-  return(s)
+  listeNomScore <- list(nom, s)
+  return(listeNomScore)
 }
 
 
+# Application de la fonction MotSemantInterp a une requete (après traitement de cette dernière)
+InterpSemRequete <- function(req){
+  req <- removePunctuation(req)
+  req <- tolower(req)
+  req <- removeWords(req, stopwords("french"))
+  req <- stripWhitespace(req)
+  words <- unlist(strsplit(req, "\\s"))
+  words <- wordStem(words, language = "french")
 
+  lis <- lapply(words,MotSemantInterp )
+
+  return(lis)
+}
