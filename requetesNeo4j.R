@@ -1,13 +1,14 @@
 # Code permettant d'effectuer des requetes à la base Neo4j
 
 library(RNeo4j)
-install.packages("devtools")
-devtools::install_github("nicolewhite/RNeo4j")
+#install.packages("devtools")
+#devtools::install_github("nicolewhite/RNeo4j")
 
 db = startGraph("127.0.0.1:7474/db/data/")
 
 # Fonction retournant les titres des articles liés à un mot clé stemmatisé
 #   ainsi que la valeur count du lien
+# input : un mot stemmatisé
 getArticlesFromWord <- function(stem){
   queryA <- paste(paste("MATCH(a:article)--(w:word {stem:'",stem,sep=""),"'}) RETURN a",sep="")
   queryR <- paste(paste("MATCH(a:article)-[rel]-(w:word {stem:'",stem,sep=""),"'}) RETURN rel",sep="")
@@ -23,6 +24,7 @@ result
 
 # Fonction retournant les mots stemmatisés présents dans un article
 #   ainsi que la valeur count du lien
+# input : le titre d'un article
 getWordsFromArticle <- function(titre){
   queryW <- paste(paste("MATCH(a:article {title:'",titre,sep=""),"'})--(w:word) RETURN w",sep="")
   queryR <- paste(paste("MATCH(a:article {title:'",titre,sep=""),"'})-[rel]-(w:word) RETURN rel",sep="")
@@ -59,4 +61,29 @@ getArticlesFromCategory <- function(label){
   return (result)
 }
 result=getArticlesFromCategory("Homonymie_de_toponyme")
+result
+
+
+# Fonction retournant les labels des catégories liés à un mot clé stemmatisé
+# input : un mot stemmatisé
+getCategoriesFromWord <- function(stem){
+  queryC <- paste(paste("MATCH(c:category)--(a:article)--(w:word {stem:'",stem,sep=""),"'}) RETURN c",sep="")
+  resultC <- getNodes(db,queryC)
+  label <- sapply(resultC, function(p) p$label)
+  result=data.frame(label)
+  return (result)
+}
+result=getCategoriesFromWord("commerc")
+result
+
+# Fonction retournant les mots stemmatisés liés à une catégorie
+# input : le label d'une catégorie
+getWordsFromCategory(label){
+  queryW <- paste(paste("MATCH(c:category {label:'",label,sep=""),"'})--(a:article)--(w:word) RETURN w",sep="")
+  resultW <- getNodes(db,queryW)
+  stem <- sapply(resultW, function(p) p$stem)
+  result=data.frame(stem)
+  return (result)
+}
+result = getWordsFromCategory("Homonymie_de_toponyme")
 result
