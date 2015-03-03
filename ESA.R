@@ -61,6 +61,12 @@ MotSemantInterp <- function(mot){
     nom[i] <- ArtFrWor[i,1]
     s[i] <- TFIDF(tf, nDocs, df)
   }
+  
+# On trie les 2 vecteurs par ordre de score décroissant  
+  ordre <- order(s, decreasing = TRUE)]
+  s <- s[ordre]
+  nom <- nom[ordre]
+  
   listeNomScore <- list(nom, s)
   return(listeNomScore)
 }
@@ -79,3 +85,4 @@ InterpSemRequete <- function(req){
 
   return(lis)
 }
+
