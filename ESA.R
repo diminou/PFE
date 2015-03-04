@@ -68,7 +68,7 @@ MotSemantInterp <- function(mot){
   nom <- nom[ordre]
 
 
-  listeNomScore <- PrepSlidWind(vecTrie = s,nomTrie = nom, length = 100,pourcent = 0.5)
+  listeNomScore <- PrepSlidWind(vecTrie = s,nomTrie = nom, length = 100, pourcent = 0.05)
 
   # ce qu'on faisait sans la sliding window
 #   listeNomScore <- list(nom, s)
