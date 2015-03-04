@@ -56,5 +56,3 @@ listeTitresRequete <-function(requete){
 }
 listeTitresRequete("tennis")
 
-# Fonction qui retourne la liste de mots-clés d'un String
-
