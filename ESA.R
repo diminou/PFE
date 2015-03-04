@@ -108,27 +108,32 @@ SlidingWindow <- function(seq, highScore, length,  pourcent){
 # on prépare les données pour la méthode de sliding window et on boucle en faisant varier glisser notre fenetre
 # renvoit la liste(nom, score) ppour les scores "pertinents" sans grand saut
 PrepSlidWind <- function(vecTrie, nomTrie, length, pourcent){
-  highScore = vecTrie[1]
   
-  bool = TRUE
-  i =1
-  resNom <- nomTrie[1]
-  res <-  vecTrie[1]
-  max <- length(vecTrie)
-  while(bool== TRUE){
-    seq <- vecTrie[(1 +i) :(length+i)]
-    bool <- SlidingWindow(seq,highScore, length, pourcent)
-    if(bool== TRUE){
-      res[i+1] <- vecTrie[i+1]
-      resNom[i+1] <- nomTrie[i+1]
+  if(length> length(vecTrie)){
+    lis <- list(vecTrie, nomTrie)
+  }else {
+    highScore = vecTrie[1]
+    bool = TRUE
+    i =1
+    resNom <- nomTrie[1]
+    res <-  vecTrie[1]
+    max <- length(vecTrie)
+    while(bool== TRUE){
+      seq <- vecTrie[(1 +i) :(length+i)]
+      bool <- SlidingWindow(seq,highScore, length, pourcent)
+      if(bool== TRUE){
+        res[i+1] <- vecTrie[i+1]
+        resNom[i+1] <- nomTrie[i+1]
+      }
+      
+      if(i == max -length ){
+        bool = FALSE
+      }
+      i <- i+1
     }
-
-    if(i == max -length ){
-      bool = FALSE
-    }
-    i <- i+1
+    lis <- list(resNom, res)
   }
-  lis <- list(resNom, res)
+
   
   return(lis)
 }
@@ -138,5 +143,5 @@ PrepSlidWind <- function(vecTrie, nomTrie, length, pourcent){
 
 # PrepSlidWind(c(17,16,15,14,3,2,1), c("17","16","15","14","3","2","1"), 2, 0.5)
  
-
+ 
 
