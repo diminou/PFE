@@ -63,11 +63,15 @@ MotSemantInterp <- function(mot){
   }
   
 # On trie les 2 vecteurs par ordre de score décroissant  
-  ordre <- order(s, decreasing = TRUE)]
+  ordre <- order(s, decreasing = TRUE)
   s <- s[ordre]
   nom <- nom[ordre]
-  
-  listeNomScore <- list(nom, s)
+
+
+  listeNomScore <- PrepSlidWind(vecTrie = s,nomTrie = nom, length = 100,pourcent = 0.5)
+
+  # ce qu'on faisait sans la sliding window
+#   listeNomScore <- list(nom, s)
   return(listeNomScore)
 }
 
@@ -85,4 +89,54 @@ InterpSemRequete <- function(req){
 
   return(lis)
 }
+
+# retourne true ssi la sliding window garde la séquence (<5% highest score), sinon retourne false
+SlidingWindow <- function(seq, highScore, length,  pourcent){
+  bool = FALSE
+  diff = seq[1] -seq[length] 
+  print(diff)
+  print(highScore)
+  print(pourcent)
+  if(diff < (pourcent * highScore)){
+    bool= TRUE
+  }else {
+    bool = FALSE
+  }
+  return (bool)
+}
+
+# on prépare les données pour la méthode de sliding window et on boucle en faisant varier glisser notre fenetre
+# renvoit la liste(nom, score) ppour les scores "pertinents" sans grand saut
+PrepSlidWind <- function(vecTrie, nomTrie, length, pourcent){
+  highScore = vecTrie[1]
+  
+  bool = TRUE
+  i =1
+  resNom <- nomTrie[1]
+  res <-  vecTrie[1]
+  max <- length(vecTrie)
+  while(bool== TRUE){
+    seq <- vecTrie[(1 +i) :(length+i)]
+    bool <- SlidingWindow(seq,highScore, length, pourcent)
+    if(bool== TRUE){
+      res[i+1] <- vecTrie[i+1]
+      resNom[i+1] <- nomTrie[i+1]
+    }
+
+    if(i == max -length ){
+      bool = FALSE
+    }
+    i <- i+1
+  }
+  lis <- list(resNom, res)
+  
+  return(lis)
+}
+
+
+
+
+# PrepSlidWind(c(17,16,15,14,3,2,1), c("17","16","15","14","3","2","1"), 2, 0.5)
+ 
+
 
