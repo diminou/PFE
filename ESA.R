@@ -12,6 +12,12 @@ library(RNeo4j)
 db = startGraph("127.0.0.1:7474/db/data/")
 #  tf time frequency du mot dans le doc, nb nb de doc, df document frequency du mot
 TFIDF <- function(tf, nb, df){
+  print("tf")
+  print(tf)
+  print("nb")
+  print(nb)
+  print("df")
+  print(df)
   return (tf *log(nb/df))
 }
 
@@ -258,6 +264,9 @@ cosSim_req_1doc <- function(req, nomDoc){
   }
     
   res <- sim_cos(vectReq,vectDoc)
+  print("vectReq, vectDoc")
+  print(vectReq)
+  print(vectDoc)
   return(res)
 }
 
@@ -274,7 +283,7 @@ cos_sim_req_doc <- function(req){
       score <- c(score, cosSim_req_1doc(req, listeDoc[i]))
     }
   }
-  ordre <- order(score)
+  ordre <- order(score, decreasing = T)
   nomDoc <- nomDoc[ordre]
   score <- score[ordre]
   

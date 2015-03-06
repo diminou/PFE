@@ -74,7 +74,7 @@ testSource <- tm_map(testSource, removeWords, stopwords("french"))
 stemDocument(testSource[[1]], language="french")
 toSpace(VectorSource("blabla d'Argagnan blabla2."), "'")
 
-wordStem("Par exemple, ceci n'est qu'un test. Proliferation armistice proposition .", language = "french")
+wordStem("Par exemple, ceci n'est qu'un test. Proliferation armistice é à ï .", language = "french")
 wrds <- unlist(strsplit(stripWhitespace(removePunctuation("bla, blabla, exclamation!
                            Encore une ligne, bla.")), "\\s"))
 
@@ -89,9 +89,9 @@ getTransformations()
 
 ### NE PAS EXECUTER ###
 ### Ecriture de short abstracts en CSV ###
-# write("article, word, count", short_abstracts_csv, sep = "\n", append = T)
+# write("article, word, count", short_abstracts_csv, sep = "\n", append = T, encoding = "utf-8")
 # abstractToCsv <- function(inpath, outpath) {
-#   conn <- file(inpath, open = "r")
+#   conn <- file(inpath, open = "r", encoding = "utf-8")
 #   write("article,word,count", outpath, sep = "\n", append = F)
 #   counter100 <- 0
 #   counter <- 0
@@ -123,9 +123,9 @@ getTransformations()
 #   }
 #   close(conn)
 # }
-
-### NE PAS EXECUTER ###
-# abstractToCsv(short_abstracts, short_abstracts_csv)
+# 
+# ### NE PAS EXECUTER ###
+#  abstractToCsv(short_abstracts, short_abstracts_csv)
 
 ### Transformation de short_abstracts en csv par parties ###
 abstractToCsvInParts <- function(inpath, outpath, lengthPart) {
