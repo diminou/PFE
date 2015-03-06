@@ -159,7 +159,7 @@ setDocReq <- function(req){
   words <- unlist(strsplit(req, "\\s"))
   words <- wordStem(words, language = "french")
   
-  wordsUnique <- union(wordsUnique,wordsUnique)
+  wordsUnique <- union(words,words)
   listeDocUnique <- c(getArticlesFromWord(words[1])[,1])
   
   if(length(wordsUnique)>1){
@@ -214,9 +214,14 @@ TFIDF_doc <- function(word, doc){
 
 
   tf <- getLinkFromArticleWord(doc, word)
-  if(tf >0){
-   tf <- 1 + log(tf)
+  print("TF")  
+  print(tf)
+  if(!is.null(tf)){
+    if(tf >0){
+      tf <- 1 + log(tf)
+    }
   }
+  
 
   nDocs = nombreDoc
   ArtFrWor=getArticlesFromWord(wordStem(word, language = "french"))
@@ -237,7 +242,7 @@ cosSim_req_1doc <- function(req, nomDoc){
   words <- unlist(strsplit(req, "\\s"))
   words <- wordStem(words, language = "french")
   
-  wordsUnique <- union(wordsUnique,wordsUnique)
+  wordsUnique <- union(words,words)
   vectReq <- c(TFIDF_req(wordsUnique[1], req))
   if(length(wordsUnique)>1){
     for(i in 2:length(wordsUnique)){
@@ -270,8 +275,8 @@ cos_sim_req_doc <- function(req){
     }
   }
   ordre <- order(score)
-  nomDoc <- nomDoc[order]
-  score <- score[order]
+  nomDoc <- nomDoc[ordre]
+  score <- score[ordre]
   
   listeDocScore <- list(nomDoc,score)
   

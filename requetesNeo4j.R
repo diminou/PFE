@@ -1,10 +1,17 @@
 # Code permettant d'effectuer des requetes à la base Neo4j
 
 library(RNeo4j)
+library(compiler)
 #install.packages("devtools")
 #devtools::install_github("nicolewhite/RNeo4j")
 
 db = startGraph("127.0.0.1:7474/db/data/")
+
+
+# Fonction qui permet d'ignorer l'apostrophe
+escapeApostrophes <- cmpfun(function(string) {
+  return(gsub("'", "\\'", string, fixed =T ))
+})
 
 # Fonction retournant les titres des articles liés à un mot clé stemmatisé
 #   ainsi que la valeur count du lien
@@ -26,7 +33,7 @@ result
 # du titre de l'article et
 # de la racine du mot
 getLinkFromArticleWord <- function(title, stem) {
-  q <- paste("match(:article {title:'", title, "'})-[r]-(:word {stem:'", stem, "'}) return r", sep = "")
+  q <- paste("match(:article {title:\"", title, "\"})-[r]-(:word {stem:\"", stem, "\"}) return r", sep = "")
   result <- getSingleRel(db, q)
   if(is.null(result)){
     return(NULL)
@@ -37,9 +44,13 @@ getLinkFromArticleWord <- function(title, stem) {
 # Fonction retournant les mots stemmatisés présents dans un article
 #   ainsi que la valeur count du lien
 # input : le titre d'un article
-getWordsFromArticle <- function(titre){
-  queryW <- paste(paste("MATCH(a:article {title:'",titre,sep=""),"'})--(w:word) RETURN w",sep="")
-  queryR <- paste(paste("MATCH(a:article {title:'",titre,sep=""),"'})-[rel]-(w:word) RETURN rel",sep="")
+getWordsFromArticle <- function(ttr){
+  titre = escapeApostrophes(ttr)
+  print(titre)
+  queryW <- paste(paste("MATCH(a:article {title:\"",titre,sep=""),"\"})--(w:word) RETURN w",sep="")
+  queryR <- paste(paste("MATCH(a:article {title:\"",titre,sep=""),"\"})-[rel]-(w:word) RETURN rel",sep="")
+  print(queryW)
+  print(queryR)
   resultW <- getNodes(db,queryW)
   resultR <- getRels(db,queryR)
   stem <- sapply(resultW, function(p) p$stem)
@@ -47,7 +58,7 @@ getWordsFromArticle <- function(titre){
   result=data.frame(stem,count)
   return (result)
 }
-result=getWordsFromArticle("Baker")
+result=getWordsFromArticle("Boulanger")
 result
 
 # Fonction retournant les labels des catégories liées à un article
