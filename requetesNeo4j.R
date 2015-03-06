@@ -22,6 +22,18 @@ getArticlesFromWord <- function(stem){
 result=getArticlesFromWord("commerc")
 result
 
+# Fonction retournant le lien entre un article et un mot en fonction
+# du titre de l'article et
+# de la racine du mot
+getLinkFromArticleWord <- function(title, stem) {
+  q <- paste("match(:article {title:'", title, "'})-[r]-(:word {stem:'", stem, "'}) return r", sep = "")
+  result <- getSingleRel(db, q)
+  if(is.null(result)){
+    return(NULL)
+  }
+  return(as.numeric(result$count))
+}
+
 # Fonction retournant les mots stemmatisés présents dans un article
 #   ainsi que la valeur count du lien
 # input : le titre d'un article
