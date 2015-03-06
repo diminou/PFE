@@ -21,7 +21,7 @@ TFIDF_norm <- function(tfidf, r){
 }
 
 
-
+# calcul la similarité coinus enter 2 vecteurs v1 et v2 de même longueur (on prendra le tfidf dans noter cas.)
 sim_cos <- function(v1, v2){
   num <- 0
   part1 <-  0
@@ -42,11 +42,11 @@ sim_cos <- function(v1, v2){
 # nb de doc 
 nbDocs <- function(){
   q = "match(a:article) return count(a)"
-  return(cypher(db, q)[1,1])
-  
+  return(cypher(db, q)[1,1]) 
 }
-
 nombreDoc <- nbDocs()
+
+
 
 # retourne la liste(nom des doc dans lequel le mot est présent, vecteur semantique du mot) 
 MotSemantInterp <- function(mot){
@@ -75,6 +75,17 @@ MotSemantInterp <- function(mot){
   return(listeNomScore)
 }
 
+t <- c("a", "b", "c")
+n <- c("a", "v", "n", "c", "g") 
+union(t,n)
+
+l <- list(t,n)
+l
+l[[2]][2]
+
+u <- union(l[[1]], l[[2]])
+g <- c("z")
+union(u,g)
 
 # Application de la fonction MotSemantInterp a une requete (après traitement de cette dernière)
 InterpSemRequete <- function(req){
@@ -85,7 +96,16 @@ InterpSemRequete <- function(req){
   words <- unlist(strsplit(req, "\\s"))
   words <- wordStem(words, language = "french")
 
-  lis <- lapply(words,MotSemantInterp )
+#   lis <- lapply(words,MotSemantInterp )
+  SetDoc <-MotSemantInterp(words[1])[[1]]
+  
+  for(i in 2: length(words)){
+     listeDocScore <- MotSemantInterp(words[i])
+     SetDoc <- union(SetDoc, listeDocScore[[1]])
+  }
+
+  
+
 
   return(lis)
 }
@@ -139,6 +159,154 @@ PrepSlidWind <- function(vecTrie, nomTrie, length, pourcent){
 }
 
 
+
+TFIDF_mot_doc <- function(document, mot){
+  res=0
+  count <- #count du tf du mot dans le doc
+  
+  tf <- 0
+  if(count != 0){
+    tf <- 1 + log(count)
+  }
+  
+  ArtFrWor=getArticlesFromWord(wordStem(mot, language = "french"))
+  df = nrow(ArtFrWor)
+  nDocs = nombreDoc
+  
+  res <- TFIDF(tf,nDocs,df)
+  return (res)
+}
+
+# c <- c("a", "a", "b")
+# union(c,c)
+
+Tempo <- function(req, Doc){
+  req <- removePunctuation(req)
+  req <- tolower(req)
+  req <- removeWords(req, stopwords("french"))
+  req <- stripWhitespace(req)
+  words <- unlist(strsplit(req, "\\s"))
+  words <- wordStem(words, language = "french")
+  
+  
+  wordsUnique <- union(words, words)
+  
+  for(i in 1:length(wordsUnique)){
+    scoreWord <- TFIDF(word, req)
+    scoreDoc <- TFIDF(word,Doc)
+    VectREq <- c(VectREq, scoreWord)
+    vectDoc <- c(vectDoc, scoreDoc)
+  }
+  
+  res = 0
+  res = sim_cos(VectREq,vectDoc)
+  
+  return (res)
+}
+
+Req_1Doc <- function(req, Doc){
+  
+  reqUnique <- union(req, req)
+  for(word in reqUnique){
+    scoreWord <- TFIDF(word, req)
+    scoreDoc <- TFIDF(word,Doc)
+    VectREq <- c(VectREq, scoreWord)
+    vectDoc <- c(vectDoc, scoreDoc)
+  }
+  
+  res = 0
+  res = sim_cos(VectREq,vectDoc)
+  
+  return (res)
+}
+
+
+TFIDF_req <- function(word, req){
+  req <- removePunctuation(req)
+  req <- tolower(req)
+  req <- removeWords(req, stopwords("french"))
+  req <- stripWhitespace(req)
+  words <- unlist(strsplit(req, "\\s"))
+  words <- wordStem(words, language = "french")
+  
+  
+  tf <-0 # nb de fois du word dans req
+  for(i in 1:length(words)){
+    if(words[i]==word){
+      tf <- tf+1
+    }
+  }
+  tf <- tf/length(words)
+  
+  nDocs = nombreDoc
+  ArtFrWor=getArticlesFromWord(wordStem(word, language = "french"))
+  df = nrow(ArtFrWor)
+
+  res =0
+  res =TFIDF(tf, nDocs, df)
+  
+  return(res)
+}
+
+
+
+TFIDF_doc <- function(word, doc){
+
+ 
+  wfa <- getWordsFromArticle(doc)
+  n <- nrow(wfa)
+#   tf <- count de word dasn doc/nb de mot dans le doc
+  tf <- countDiminou/n
+
+  nDocs = nombreDoc
+  ArtFrWor=getArticlesFromWord(wordStem(word, language = "french"))
+  df = nrow(ArtFrWor)
+  
+  res =0
+  res =TFIDF(tf, nDocs, df)
+  
+  return(res)
+}
+
+
+Assemblage <- function(req){
+  req <- removePunctuation(req)
+  req <- tolower(req)
+  req <- removeWords(req, stopwords("french"))
+  req <- stripWhitespace(req)
+  words <- unlist(strsplit(req, "\\s"))
+  words <- wordStem(words, language = "french")
+  
+  wordsUnique <- union(wordsUnique,wordsUnique)
+  vectReq <- lapply(c(wordsUnique, req), TFIDF_req)
+  
+#   appliquer vectDoc pour tous les documents ou un mot de la req est renvoyé
+#   vectDoc <- lapply(c(wordsUnique, doc), TFIDF_req)
+  
+}
+
+
+
+setDocREq <- function(req){
+  req <- removePunctuation(req)
+  req <- tolower(req)
+  req <- removeWords(req, stopwords("french"))
+  req <- stripWhitespace(req)
+  words <- unlist(strsplit(req, "\\s"))
+  words <- wordStem(words, language = "french")
+  
+  listeDocUnique <- 
+  
+  wordsUnique <- union(wordsUnique,wordsUnique)
+  listeDocUnique <- 
+  
+  for(i in 2:length(wordsUnique)){
+    listeDocUnique <- c(listeDocUnique,getDoc de wordsUnique[1])
+  }
+  
+  return(listeDocUnique)
+  
+}
 
 
 # PrepSlidWind(c(17,16,15,14,3,2,1), c("17","16","15","14","3","2","1"), 2, 0.5)
