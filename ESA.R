@@ -20,7 +20,6 @@ TFIDF_norm <- function(tfidf, r){
  return (tfidf/sqrt(r *(tfidf*tfidf)))
 }
 
-
 # calcul la similarité coinus enter 2 vecteurs v1 et v2 de même longueur (on prendra le tfidf dans noter cas.)
 sim_cos <- function(v1, v2){
   num <- 0
@@ -37,14 +36,22 @@ sim_cos <- function(v1, v2){
   return (res)
 }
 
-
-
 # nb de doc 
 nbDocs <- function(){
   q = "match(a:article) return count(a)"
   return(cypher(db, q)[1,1]) 
 }
 nombreDoc <- nbDocs()
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -75,17 +82,7 @@ MotSemantInterp <- function(mot){
   return(listeNomScore)
 }
 
-t <- c("a", "b", "c")
-n <- c("a", "v", "n", "c", "g") 
-union(t,n)
 
-l <- list(t,n)
-l
-l[[2]][2]
-
-u <- union(l[[1]], l[[2]])
-g <- c("z")
-union(u,g)
 
 # Application de la fonction MotSemantInterp a une requete (après traitement de cette dernière)
 InterpSemRequete <- function(req){
@@ -96,17 +93,7 @@ InterpSemRequete <- function(req){
   words <- unlist(strsplit(req, "\\s"))
   words <- wordStem(words, language = "french")
 
-#   lis <- lapply(words,MotSemantInterp )
-  SetDoc <-MotSemantInterp(words[1])[[1]]
-  
-  for(i in 2: length(words)){
-     listeDocScore <- MotSemantInterp(words[i])
-     SetDoc <- union(SetDoc, listeDocScore[[1]])
-  }
-
-  
-
-
+  lis <- lapply(words,MotSemantInterp )
   return(lis)
 }
 
@@ -160,27 +147,11 @@ PrepSlidWind <- function(vecTrie, nomTrie, length, pourcent){
 
 
 
-TFIDF_mot_doc <- function(document, mot){
-  res=0
-  count <- #count du tf du mot dans le doc
-  
-  tf <- 0
-  if(count != 0){
-    tf <- 1 + log(count)
-  }
-  
-  ArtFrWor=getArticlesFromWord(wordStem(mot, language = "french"))
-  df = nrow(ArtFrWor)
-  nDocs = nombreDoc
-  
-  res <- TFIDF(tf,nDocs,df)
-  return (res)
-}
 
-# c <- c("a", "a", "b")
-# union(c,c)
 
-Tempo <- function(req, Doc){
+
+# retourne la liste (set) des documents associés a une requete (sous la forme d'un vecteur)
+setDocReq <- function(req){
   req <- removePunctuation(req)
   req <- tolower(req)
   req <- removeWords(req, stopwords("french"))
@@ -188,39 +159,21 @@ Tempo <- function(req, Doc){
   words <- unlist(strsplit(req, "\\s"))
   words <- wordStem(words, language = "french")
   
+  wordsUnique <- union(wordsUnique,wordsUnique)
+  listeDocUnique <- c(getArticlesFromWord(words[1])[,1])
   
-  wordsUnique <- union(words, words)
-  
-  for(i in 1:length(wordsUnique)){
-    scoreWord <- TFIDF(word, req)
-    scoreDoc <- TFIDF(word,Doc)
-    VectREq <- c(VectREq, scoreWord)
-    vectDoc <- c(vectDoc, scoreDoc)
+  if(length(wordsUnique)>1){
+    for(i in 2:length(wordsUnique)){
+      tempo <- c(getArticlesFromWord(words[i])[,1])
+      listeDocUnique <- union(listeDocUnique, tempo)
+    }
   }
   
-  res = 0
-  res = sim_cos(VectREq,vectDoc)
-  
-  return (res)
-}
-
-Req_1Doc <- function(req, Doc){
-  
-  reqUnique <- union(req, req)
-  for(word in reqUnique){
-    scoreWord <- TFIDF(word, req)
-    scoreDoc <- TFIDF(word,Doc)
-    VectREq <- c(VectREq, scoreWord)
-    vectDoc <- c(vectDoc, scoreDoc)
-  }
-  
-  res = 0
-  res = sim_cos(VectREq,vectDoc)
-  
-  return (res)
+  return(listeDocUnique)
 }
 
 
+# calcul le TFIDF entre un mot stematisé et une requete
 TFIDF_req <- function(word, req){
   req <- removePunctuation(req)
   req <- tolower(req)
@@ -229,84 +182,102 @@ TFIDF_req <- function(word, req){
   words <- unlist(strsplit(req, "\\s"))
   words <- wordStem(words, language = "french")
   
-  
   tf <-0 # nb de fois du word dans req
   for(i in 1:length(words)){
     if(words[i]==word){
       tf <- tf+1
     }
   }
-  tf <- tf/length(words)
-  
-  nDocs = nombreDoc
-  ArtFrWor=getArticlesFromWord(wordStem(word, language = "french"))
-  df = nrow(ArtFrWor)
-
-  res =0
-  res =TFIDF(tf, nDocs, df)
-  
-  return(res)
-}
-
-
-
-TFIDF_doc <- function(word, doc){
-
- 
-  wfa <- getWordsFromArticle(doc)
-  n <- nrow(wfa)
-#   tf <- count de word dasn doc/nb de mot dans le doc
-  tf <- countDiminou/n
-
-  nDocs = nombreDoc
-  ArtFrWor=getArticlesFromWord(wordStem(word, language = "french"))
-  df = nrow(ArtFrWor)
-  
-  res =0
-  res =TFIDF(tf, nDocs, df)
-  
-  return(res)
-}
-
-
-Assemblage <- function(req){
-  req <- removePunctuation(req)
-  req <- tolower(req)
-  req <- removeWords(req, stopwords("french"))
-  req <- stripWhitespace(req)
-  words <- unlist(strsplit(req, "\\s"))
-  words <- wordStem(words, language = "french")
-  
-  wordsUnique <- union(wordsUnique,wordsUnique)
-  vectReq <- lapply(c(wordsUnique, req), TFIDF_req)
-  
-#   appliquer vectDoc pour tous les documents ou un mot de la req est renvoyé
-#   vectDoc <- lapply(c(wordsUnique, doc), TFIDF_req)
-  
-}
-
-
-
-setDocREq <- function(req){
-  req <- removePunctuation(req)
-  req <- tolower(req)
-  req <- removeWords(req, stopwords("french"))
-  req <- stripWhitespace(req)
-  words <- unlist(strsplit(req, "\\s"))
-  words <- wordStem(words, language = "french")
-  
-  listeDocUnique <- 
-  
-  wordsUnique <- union(wordsUnique,wordsUnique)
-  listeDocUnique <- 
-  
-  for(i in 2:length(wordsUnique)){
-    listeDocUnique <- c(listeDocUnique,getDoc de wordsUnique[1])
+#   tf <- tf/length(words)
+  if(tf >0){
+    tf <- 1 + log(tf)
   }
   
-  return(listeDocUnique)
+  nDocs = nombreDoc
+  ArtFrWor=getArticlesFromWord(wordStem(word, language = "french"))
+  df = nrow(ArtFrWor)
+
+  res =0
+  res =TFIDF(tf, nDocs, df)
   
+  return(res)
 }
+
+
+# calcul le TF IDF enter un mot stematisé et un document.
+TFIDF_doc <- function(word, doc){
+  wfa <- getWordsFromArticle(doc)
+  n <- nrow(wfa)
+  
+#   tf <- count de word dasn doc/nb de mot dans le doc
+#   tf <- getLinkFromArticleWord(doc, word)/n
+
+
+  tf <- getLinkFromArticleWord(doc, word)
+  if(tf >0){
+   tf <- 1 + log(tf)
+  }
+
+  nDocs = nombreDoc
+  ArtFrWor=getArticlesFromWord(wordStem(word, language = "french"))
+  df = nrow(ArtFrWor)
+  
+  res =0
+  res =TFIDF(tf, nDocs, df)
+  
+  return(res)
+}
+
+# Calcule la similarité cosinus entre une requete et un document
+cosSim_req_1doc <- function(req, nomDoc){
+  req <- removePunctuation(req)
+  req <- tolower(req)
+  req <- removeWords(req, stopwords("french"))
+  req <- stripWhitespace(req)
+  words <- unlist(strsplit(req, "\\s"))
+  words <- wordStem(words, language = "french")
+  
+  wordsUnique <- union(wordsUnique,wordsUnique)
+  vectReq <- c(TFIDF_req(wordsUnique[1], req))
+  if(length(wordsUnique)>1){
+    for(i in 2:length(wordsUnique)){
+      vectReq <- c(vectReq,TFIDF_req(wordsUnique[i], req))
+    }
+  }
+
+  vectDoc <- c(TFIDF_doc(wordsUnique[1], nomDoc))
+  if(length(wordsUnique)>1){
+    for(i in 2:length(wordsUnique)){
+      vectDoc <- c(vectDoc, TFIDF_doc(wordsUnique[i], nomDoc))
+    } 
+  }
+    
+  res <- sim_cos(vectReq,vectDoc)
+  return(res)
+}
+
+# Calcule la cosinus similarité entre une requete et tous les documents qui lui sont associés.
+# retourne une liste(nom de documents associé, score) ordonnée
+cos_sim_req_doc <- function(req){
+  listeDoc <- setDocReq(req)
+  nomDoc <- c(listeDoc[1])
+  score <- c(cosSim_req_1doc(req, listeDoc[1]))
+  
+  if(length(listeDoc)>1){
+    for(i in 2:length(listeDoc)){
+      nomDoc <- c(nomDoc,listeDoc[i])
+      score <- c(score, cosSim_req_1doc(req, listeDoc[i]))
+    }
+  }
+  ordre <- order(score)
+  nomDoc <- nomDoc[order]
+  score <- score[order]
+  
+  listeDocScore <- list(nomDoc,score)
+  
+  return(listeDocScore)
+}
+
 
 
 # PrepSlidWind(c(17,16,15,14,3,2,1), c("17","16","15","14","3","2","1"), 2, 0.5)
