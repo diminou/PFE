@@ -34,6 +34,32 @@ db = startGraph("127.0.0.1:7474/db/data/")
 clear(db)
 
 
+#######################TSET#########################
+testFile <- "/home/divanov/.pfe/test"
+conn <- file(testFile, open = "r", encoding = "utf-8")
+line <- readLines(conn, 1)
+line2 <- readLines(conn, 1)
+line3 <- readLines(conn, 1)
+Encoding(line3)
+Encoding(line) <- "utf-8"
+Encoding(line2) <- "latin-1"
+enc2utf8(line3)
+print(line)
+iconv(line3, from = "ISO-8859-1", to = "UTF-8", toRaw = T)
+iconv(line3, from = "UTF-8", to = "ISO-8859-1", toRaw = T)
+line2 <- enc2utf8(iconv(line2, from = "UTF-8", to = "ISO-8859-1"))
+print(line2)
+print(line3)
+print(toSpace(line, "'"))
+print(wordStem(line, language = "french"))
+close(conn)
+
+####################################################
+
+fixEncoding <- function(string){
+  return(iconv(string, from = "UTF-8", to = "ISO-8859-1"))
+}
+
 ### Definition des chemins  et transformation en CSV###
 ### excepte short_abstracts ###
 fileName <- ".pfe/article_categories_fr.ttl"
@@ -150,9 +176,12 @@ abstractToCsvInParts <- function(inpath, outpath, lengthPart) {
         content <- stripWhitespace(content)
         words <- unlist(strsplit(content, "\\s"))
         words <- wordStem(words, language = "french")
-        chunk <- makeAbstractCsv(title, words)
-        if(chunk != ""){
-          write(chunk,  paste(paste(outpath,counterParts,sep=""),".csv",sep=""), sep = "", append = T)
+        chunk <- fixEncoding(makeAbstractCsv(title, words))
+        #Encoding(chunk) <- "utf-8"
+        if(!is.null(chunk)){
+          if(chunk != ""){
+            write(chunk,  paste(paste(outpath,counterParts,sep=""),".csv",sep=""), sep = "", append = T)
+          }
         }
       }
     }, error=function(e){print("eeeeeeeeeeeeeeeeeeeee")
@@ -166,7 +195,7 @@ abstractToCsvInParts <- function(inpath, outpath, lengthPart) {
     if(counterLengthPart == lengthPart){
       counterLengthPart <- 0
       counterParts <- counterParts + 1
-      write("article,word,count", paste(paste(outpath,counterParts,sep=""),".csv",sep=""), sep = "\n", append=F)
+      write("article,word,count", paste(paste(outpath,counterParts,sep=""),".csv",sep=""), sep = "\n", append=F )
     }
   }
   close(conn)
