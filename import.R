@@ -35,24 +35,24 @@ clear(db)
 
 
 #######################TSET#########################
-testFile <- "/home/divanov/.pfe/test"
-conn <- file(testFile, open = "r", encoding = "utf-8")
-line <- readLines(conn, 1)
-line2 <- readLines(conn, 1)
-line3 <- readLines(conn, 1)
-Encoding(line3)
-Encoding(line) <- "utf-8"
-Encoding(line2) <- "latin-1"
-enc2utf8(line3)
-print(line)
-iconv(line3, from = "ISO-8859-1", to = "UTF-8", toRaw = T)
-iconv(line3, from = "UTF-8", to = "ISO-8859-1", toRaw = T)
-line2 <- enc2utf8(iconv(line2, from = "UTF-8", to = "ISO-8859-1"))
-print(line2)
-print(line3)
-print(toSpace(line, "'"))
-print(wordStem(line, language = "french"))
-close(conn)
+# testFile <- "/home/divanov/.pfe/test"
+# conn <- file(testFile, open = "r", encoding = "utf-8")
+# line <- readLines(conn, 1)
+# line2 <- readLines(conn, 1)
+# line3 <- readLines(conn, 1)
+# Encoding(line3)
+# Encoding(line) <- "utf-8"
+# Encoding(line2) <- "latin-1"
+# enc2utf8(line3)
+# print(line)
+# iconv(line3, from = "ISO-8859-1", to = "UTF-8", toRaw = T)
+# iconv(line3, from = "UTF-8", to = "ISO-8859-1", toRaw = T)
+# line2 <- enc2utf8(iconv(line2, from = "UTF-8", to = "ISO-8859-1"))
+# print(line2)
+# print(line3)
+# print(toSpace(line, "'"))
+# print(wordStem(line, language = "french"))
+# close(conn)
 
 ####################################################
 
@@ -133,7 +133,7 @@ getTransformations()
 #         content <- stripWhitespace(content)
 #         words <- unlist(strsplit(content, "\\s"))
 #         words <- wordStem(words, language = "french")
-#         chunk <- makeAbstractCsv(title, words)
+#         chunk <- fixEncoding(makeAbstractCsv(title, words))
 #         if(chunk != ""){
 #           write(chunk, outpath, sep = "", append = T)
 #         }
@@ -264,10 +264,10 @@ query = "CREATE CONSTRAINT ON (w:word) ASSERT w.stem IS UNIQUE"
 cypher(db, query)
 
 ### NE PAS EXECUTER ###
-#query = paste("USING PERIODIC COMMIT 1000
+# query = paste("USING PERIODIC COMMIT 1000
 #         LOAD CSV WITH HEADERS FROM \"file:", short_abstracts_csv, "\" AS row
 #         MERGE (:word {stem:row.word})", sep = "")
-#cypher(db, query)
+# cypher(db, query)
 
 
 saveBddPart <- function(part){
