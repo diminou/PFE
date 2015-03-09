@@ -157,9 +157,13 @@ PrepSlidWind <- function(vecTrie, nomTrie, length, pourcent){
 }
 
 
+firstCol <- function(data) {
+  return(data[,1])
+}
 
-
-
+getArtNamesFromWord <- function(word) {
+  return (firstCol(getArticlesFromWord(word)))
+}
 
 
 # retourne la liste (set) des documents associés a une requete (sous la forme d'un vecteur)
@@ -173,7 +177,7 @@ setDocReq <- function(req){
   
   wordsUnique <- unique(words)
   
-  listeDocUnique <- unique(lapply(getArticlesFromWord(wordsUnique)[,1]))
+  listeDocUnique <- unique(lapply(wordsUnique, getArtNamesFromWord))
   
   
 #   listeDocUnique <- c(getArticlesFromWord(words[1])[,1])
