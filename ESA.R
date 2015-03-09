@@ -266,9 +266,9 @@ cosSim_req_1doc <- function(req, nomDoc){
     } 
   }
     
-  print("taille req")
-  print(length(wordsUnique))
-  
+#   print("taille req")
+#   print(length(wordsUnique))
+#   
 #   print("test vectDOc et vectReq même longueur")
 #   print(length(vectDoc)==length(vectReq))
   
