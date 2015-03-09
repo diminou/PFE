@@ -31,6 +31,10 @@ sim_cos <- function(v1, v2){
   num <- 0
   part1 <-  0
   part2 <-  0
+  print("taille v1 et v2 :")
+  print(length(v1))
+  print(length(v2))
+  
   for(i in 1:length(v1)){
     num= num + v1[i]*v2[i]
     part1 = part1 + v1[i]*v1[i]
@@ -167,6 +171,8 @@ setDocReq <- function(req){
   if(length(wordsUnique)>1){
     for(i in 2:length(wordsUnique)){
       tempo <- c(getArticlesFromWord(words[i])[,1])
+      print("tempo")
+      print(tempo)
       listeDocUnique <- union(listeDocUnique, tempo)
     }
   }
@@ -233,6 +239,8 @@ TFIDF_doc <- function(word, doc){
   return(res)
 }
 
+
+
 # Calcule la similarité cosinus entre une requete et un document
 cosSim_req_1doc <- function(req, nomDoc){
   req <- removePunctuation(req)
@@ -257,6 +265,9 @@ cosSim_req_1doc <- function(req, nomDoc){
     } 
   }
     
+  print("test vectDOc et vectReq même longueur")
+  print(length(vectDoc)==length(vectReq))
+  
   res <- sim_cos(vectReq,vectDoc)
   print("vectReq, vectDoc")
   print(vectReq)
