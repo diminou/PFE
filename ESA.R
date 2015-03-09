@@ -226,6 +226,8 @@ TFIDF_doc <- function(word, doc){
     if(tf >0){
       tf <- 1 + log(tf)
     }
+  }else{
+    tf <-0
   }
   
   nDocs = nombreDoc
@@ -273,6 +275,7 @@ cosSim_req_1doc <- function(req, nomDoc){
 #   print(vectDoc)
   return(res)
 }
+
 
 # Calcule la cosinus similarité entre une requete et tous les documents qui lui sont associés.
 # retourne une liste(nom de documents associé, score) ordonnée
