@@ -170,8 +170,6 @@ setDocReq <- function(req){
   if(length(wordsUnique)>1){
     for(i in 2:length(wordsUnique)){
       tempo <- c(getArticlesFromWord(words[i])[,1])
-      print("tempo")
-      print(tempo)
       listeDocUnique <- union(listeDocUnique, tempo)
     }
   }
@@ -220,8 +218,9 @@ TFIDF_doc <- function(word, doc){
 #   tf <- getLinkFromArticleWord(doc, word)/n
 
   tf <- getLinkFromArticleWord(doc, word)
-  print("TF")  
-  print(tf)
+#   print("TF")  
+#   print(tf)
+#   print(word)
   if(!is.null(tf)){
     if(tf >0){
       tf <- 1 + log(tf)
