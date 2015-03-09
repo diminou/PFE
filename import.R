@@ -57,7 +57,11 @@ clear(db)
 ####################################################
 
 fixEncoding <- function(string){
-  return(iconv(string, from = "UTF-8", to = "ISO-8859-1"))
+  return(enc2utf8(iconv(string, from = "UTF-8", to = "ISO-8859-1")))
+}
+
+fixEncoding <- function(string){
+  return(enc2utf8(string))
 }
 
 ### Definition des chemins  et transformation en CSV###
@@ -195,7 +199,7 @@ abstractToCsvInParts <- function(inpath, outpath, lengthPart) {
     if(counterLengthPart == lengthPart){
       counterLengthPart <- 0
       counterParts <- counterParts + 1
-      write("article,word,count", paste(paste(outpath,counterParts,sep=""),".csv",sep=""), sep = "\n", append=F )
+      write("article,word,count", paste(paste(outpath,counterParts,sep=""),".csv",sep=""), sep = "\n", append=F)
     }
   }
   close(conn)
