@@ -26,19 +26,21 @@ TFIDF_norm <- function(tfidf, r){
  return (tfidf/sqrt(r *(tfidf*tfidf)))
 }
 
+
+carre <- function(x){
+  return(x*x)
+}
+
+
 # calcul la similarité coinus enter 2 vecteurs v1 et v2 de même longueur (on prendra le tfidf dans noter cas.)
 sim_cos <- function(v1, v2){
   num <- 0
   part1 <-  0
   part2 <-  0
-#   print("taille v1 et v2 :")
-#   print(length(v1)==length(v2))
 
-  for(i in 1:length(v1)){
-    num= num + v1[i]*v2[i]
-    part1 = part1 + v1[i]*v1[i]
-    part2 = part2 + v2[i]*v2[i]
-  }
+  num = sum(v1,v2)
+  part1 = sum(carre(v1))
+  part2 = sum(carre(v2))
   
   denom = (sqrt(part1)*sqrt(part2))
   res= (num /denom)
@@ -155,6 +157,11 @@ PrepSlidWind <- function(vecTrie, nomTrie, length, pourcent){
 }
 
 
+
+
+
+
+
 # retourne la liste (set) des documents associés a une requete (sous la forme d'un vecteur)
 setDocReq <- function(req){
   req <- removePunctuation(req)
@@ -164,16 +171,19 @@ setDocReq <- function(req){
   words <- unlist(strsplit(req, "\\s"))
   words <- wordStem(words, language = "french")
   
-  wordsUnique <- union(words,words)
-  listeDocUnique <- c(getArticlesFromWord(words[1])[,1])
+  wordsUnique <- unique(words)
   
-  if(length(wordsUnique)>1){
-    for(i in 2:length(wordsUnique)){
-      tempo <- c(getArticlesFromWord(words[i])[,1])
-      listeDocUnique <- union(listeDocUnique, tempo)
-    }
-  }
+  listeDocUnique <- unique(lapply(getArticlesFromWord(wordsUnique)[,1]))
   
+  
+#   listeDocUnique <- c(getArticlesFromWord(words[1])[,1])
+#   if(length(wordsUnique)>1){
+#     for(i in 2:length(wordsUnique)){
+#       tempo <- c(getArticlesFromWord(words[i])[,1])
+#       listeDocUnique <- union(listeDocUnique, tempo)
+#     }
+#   }
+#   
   return(listeDocUnique)
 }
 
@@ -240,7 +250,6 @@ TFIDF_doc <- function(word, doc){
 }
 
 
-
 # Calcule la similarité cosinus entre une requete et un document
 cosSim_req_1doc <- function(req, nomDoc){
   req <- removePunctuation(req)
@@ -250,21 +259,27 @@ cosSim_req_1doc <- function(req, nomDoc){
   words <- unlist(strsplit(req, "\\s"))
   words <- wordStem(words, language = "french")
   
-  wordsUnique <- union(words,words)
-  vectReq <- c(TFIDF_req(wordsUnique[1], req))
-  if(length(wordsUnique)>1){
-    for(i in 2:length(wordsUnique)){
-      vectReq <- c(vectReq,TFIDF_req(wordsUnique[i], req))
-    }
-  }
+  wordsUnique <- unique(words)
+  
+  
+  vectReq <- sapply(wordsUnique, TFIDF_req, req = req)
+  
+#   vectReq <- c(TFIDF_req(wordsUnique[1], req))
+#   if(length(wordsUnique)>1){
+#     for(i in 2:length(wordsUnique)){
+#       vectReq <- c(vectReq,TFIDF_req(wordsUnique[i], req))
+#     }
+#   }
 
-  vectDoc <- c(TFIDF_doc(wordsUnique[1], nomDoc))
-  if(length(wordsUnique)>1){
-    for(j in 2:length(wordsUnique)){
-      vectDoc <- c(vectDoc, TFIDF_doc(wordsUnique[j], nomDoc))
-    } 
-  }
-    
+  vectDoc <- sapply(wordsUnique,TFIDF_doc, doc = nomDoc)
+
+#   vectDoc <- c(TFIDF_doc(wordsUnique[1], nomDoc))
+#   if(length(wordsUnique)>1){
+#     for(j in 2:length(wordsUnique)){
+#       vectDoc <- c(vectDoc, TFIDF_doc(wordsUnique[j], nomDoc))
+#     } 
+#   }
+  
 #   print("taille req")
 #   print(length(wordsUnique))
 #   
@@ -283,15 +298,24 @@ cosSim_req_1doc <- function(req, nomDoc){
 # retourne une liste(nom de documents associé, score) ordonnée
 cos_sim_req_doc <- function(req){
   listeDoc <- setDocReq(req)
-  nomDoc <- c(listeDoc[1])
-  score <- c(cosSim_req_1doc(req, listeDoc[1]))
   
-  if(length(listeDoc)>1){
-    for(i in 2:length(listeDoc)){
-      nomDoc <- c(nomDoc,listeDoc[i])
-      score <- c(score, cosSim_req_1doc(req, listeDoc[i]))
-    }
-  }
+  
+#   vectDoc <- sapply(wordsUnique,TFIDF_doc, doc = nomDoc)
+  
+  nomDoc <- listeDoc
+  score <- sapply(listeDoc,cosSim_req_1doc, req = req)
+  
+#   nomDoc <- c(listeDoc[1])
+#   score <- c(cosSim_req_1doc(req, listeDoc[1]))
+#   
+#   if(length(listeDoc)>1){
+#     for(i in 2:length(listeDoc)){
+#       nomDoc <- c(nomDoc,listeDoc[i])
+#       score <- c(score, cosSim_req_1doc(req, listeDoc[i]))
+#     }
+#   }
+  
+  
   ordre <- order(score, decreasing = T)
   nomDoc <- nomDoc[ordre]
   score <- score[ordre]
