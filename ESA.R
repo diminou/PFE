@@ -37,7 +37,7 @@ sim_cos <- function(v1, v2){
     part2 = part2 + v2[i]*v2[i]
   }
   
-  denom = sqrt(part1)*sqrt(part2)
+  denom = (sqrt(part1)*sqrt(part2))
   res= (num /denom)
   return (res)
 }
@@ -152,10 +152,6 @@ PrepSlidWind <- function(vecTrie, nomTrie, length, pourcent){
 }
 
 
-
-
-
-
 # retourne la liste (set) des documents associés a une requete (sous la forme d'un vecteur)
 setDocReq <- function(req){
   req <- removePunctuation(req)
@@ -212,12 +208,11 @@ TFIDF_req <- function(word, req){
 
 # calcul le TF IDF enter un mot stematisé et un document.
 TFIDF_doc <- function(word, doc){
-  wfa <- getWordsFromArticle(doc)
-  n <- nrow(wfa)
   
+#   wfa <- getWordsFromArticle(doc)
+#   n <- nrow(wfa)
 #   tf <- count de word dasn doc/nb de mot dans le doc
 #   tf <- getLinkFromArticleWord(doc, word)/n
-
 
   tf <- getLinkFromArticleWord(doc, word)
   print("TF")  
@@ -228,7 +223,6 @@ TFIDF_doc <- function(word, doc){
     }
   }
   
-
   nDocs = nombreDoc
   ArtFrWor=getArticlesFromWord(wordStem(word, language = "french"))
   df = nrow(ArtFrWor)
@@ -258,8 +252,8 @@ cosSim_req_1doc <- function(req, nomDoc){
 
   vectDoc <- c(TFIDF_doc(wordsUnique[1], nomDoc))
   if(length(wordsUnique)>1){
-    for(i in 2:length(wordsUnique)){
-      vectDoc <- c(vectDoc, TFIDF_doc(wordsUnique[i], nomDoc))
+    for(j in 2:length(wordsUnique)){
+      vectDoc <- c(vectDoc, TFIDF_doc(wordsUnique[j], nomDoc))
     } 
   }
     
