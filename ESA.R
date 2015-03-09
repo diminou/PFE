@@ -12,12 +12,12 @@ library(RNeo4j)
 db = startGraph("127.0.0.1:7474/db/data/")
 #  tf time frequency du mot dans le doc, nb nb de doc, df document frequency du mot
 TFIDF <- function(tf, nb, df){
-  print("tf")
-  print(tf)
-  print("nb")
-  print(nb)
-  print("df")
-  print(df)
+#   print("tf")
+#   print(tf)
+#   print("nb")
+#   print(nb)
+#   print("df")
+#   print(df)
   return (tf *log(nb/df))
 }
 
@@ -32,9 +32,8 @@ sim_cos <- function(v1, v2){
   part1 <-  0
   part2 <-  0
   print("taille v1 et v2 :")
-  print(length(v1))
-  print(length(v2))
-  
+  print(length(v1)==length(v2))
+
   for(i in 1:length(v1)){
     num= num + v1[i]*v2[i]
     part1 = part1 + v1[i]*v1[i]
@@ -171,8 +170,8 @@ setDocReq <- function(req){
   if(length(wordsUnique)>1){
     for(i in 2:length(wordsUnique)){
       tempo <- c(getArticlesFromWord(words[i])[,1])
-      print("tempo")
-      print(tempo)
+#       print("tempo")
+#       print(tempo)
       listeDocUnique <- union(listeDocUnique, tempo)
     }
   }
@@ -269,9 +268,9 @@ cosSim_req_1doc <- function(req, nomDoc){
   print(length(vectDoc)==length(vectReq))
   
   res <- sim_cos(vectReq,vectDoc)
-  print("vectReq, vectDoc")
-  print(vectReq)
-  print(vectDoc)
+#   print("vectReq, vectDoc")
+#   print(vectReq)
+#   print(vectDoc)
   return(res)
 }
 
