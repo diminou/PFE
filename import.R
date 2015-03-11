@@ -307,7 +307,11 @@ saveBddBisPart <- function(part){
 for(i in 0:6){
   saveBddBisPart(i)
 }
-for(i in 7:13){
+for(i in 7:9){
+  saveBddBisPart(i)
+}
+
+for(i in 9:13){
   saveBddBisPart(i)
 }
 for(i in 14:20){
