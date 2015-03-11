@@ -162,17 +162,31 @@ PrepSlidWind <- function(vecTrie, nomTrie, length, pourcent){
 
 
 firstCol <- function(datafr) {
- print(nrow(datafr))
- print(class(datafr))
+#  print(nrow(datafr))
+#  print(class(datafr))
   return(datafr[1])
 }
 
 
 getArtNamesFromWord <- function(word) {
-  return (firstCol(getArticlesFromWord(word)))
+  return (firstCol(getArticlesFromWord(fixEncoding(word))))
+}
+
+setDocReq("boulanger commerce")
+
+a <- c(0,1,2)
+b <- c(3,4,5,1,2,6,0)
+unique(list(a,b))
+
+
+laReunion <- function(vect){
+  return (vect)
 }
 
 
+fixEncoding <- function(string){
+  return(enc2utf8(string))
+}
 
 # retourne la liste (set) des documents associés a une requete (sous la forme d'un vecteur)
 setDocReq <- function(req){
@@ -182,13 +196,21 @@ setDocReq <- function(req){
   req <- stripWhitespace(req)
   words <- unlist(strsplit(req, "\\s"))
   words <- wordStem(words, language = "french")
- 
+
   wordsUnique <- unique(words)
-  print(getArticlesFromWord(wordsUnique[1]))
-  print(wordsUnique[1])
-  print(getArtNamesFromWord(wordsUnique[1]))
-  listeDocUnique <-  unique(lapply(wordsUnique, getArtNamesFromWord))
+#   print(class(wordsUnique))
+#   print(getArticlesFromWord(wordsUnique[1]))
+#   print(wordsUnique[1])
+#   print(getArtNamesFromWord(wordsUnique[1]))
+#   listeDocUnique <-  unique(lapply(wordsUnique, getArtNamesFromWord))
+  tempo <-  sapply(wordsUnique,getArtNamesFromWord)
+  vect <- NULL
+  for(i in 1:length(tempo)){
+    vect <- union(vect, tempo[[i]])
+  }
   
+  listeDocUnique <- vect
+
 
 #   listeDocUnique <- c(getArticlesFromWord(words[1])[,1])
 #   if(length(wordsUnique)>1){
@@ -197,6 +219,8 @@ setDocReq <- function(req){
 #       listeDocUnique <- union(listeDocUnique, tempo)
 #     }
 #   }
+
+print("reunion terminée")
   
   return(listeDocUnique)
 }
@@ -229,6 +253,7 @@ TFIDF_req <- function(word, req){
   res =0
   res =TFIDF(tf, nDocs, df)
 
+ 
   
   return(res)
 }
@@ -256,6 +281,7 @@ TFIDF_doc <- function(word, doc){
   
   nDocs = nombreDoc
   ArtFrWor=getArticlesFromWord(wordStem(word, language = "french"))
+
   df = nrow(ArtFrWor)
   
   res =0
@@ -279,23 +305,23 @@ cosSim_req_1doc <- function(req, nomDoc){
   wordsUnique <- unique(words)
   
   
-#   vectReq <- sapply(wordsUnique, TFIDF_req, req = req)
+  vectReq <- sapply(wordsUnique, TFIDF_req, req = req)
   
-  vectReq <- c(TFIDF_req(wordsUnique[1], req))
-  if(length(wordsUnique)>1){
-    for(i in 2:length(wordsUnique)){
-      vectReq <- c(vectReq,TFIDF_req(wordsUnique[i], req))
-    }
-  }
+#   vectReq <- c(TFIDF_req(wordsUnique[1], req))
+#   if(length(wordsUnique)>1){
+#     for(i in 2:length(wordsUnique)){
+#       vectReq <- c(vectReq,TFIDF_req(wordsUnique[i], req))
+#     }
+#   }
 
-#   vectDoc <- sapply(wordsUnique,TFIDF_doc, doc = nomDoc)
+  vectDoc <- sapply(wordsUnique,TFIDF_doc, doc = nomDoc)
 
-  vectDoc <- c(TFIDF_doc(wordsUnique[1], nomDoc))
-  if(length(wordsUnique)>1){
-    for(j in 2:length(wordsUnique)){
-      vectDoc <- c(vectDoc, TFIDF_doc(wordsUnique[j], nomDoc))
-    } 
-  }
+#   vectDoc <- c(TFIDF_doc(wordsUnique[1], nomDoc))
+#   if(length(wordsUnique)>1){
+#     for(j in 2:length(wordsUnique)){
+#       vectDoc <- c(vectDoc, TFIDF_doc(wordsUnique[j], nomDoc))
+#     } 
+#   }
   
 #   print("taille req")
 #   print(length(wordsUnique))
@@ -304,6 +330,7 @@ cosSim_req_1doc <- function(req, nomDoc){
 #   print(length(vectDoc)==length(vectReq))
   
   res <- sim_cos(vectReq,vectDoc)
+  print("req un doc")
 #   print("vectReq, vectDoc")
 #   print(vectReq)
 #   print(vectDoc)
@@ -316,30 +343,35 @@ cosSim_req_1doc <- function(req, nomDoc){
 cos_sim_req_doc <- function(req){
   listeDoc <- setDocReq(req)
   
-#   nomDoc <- listeDoc
-#   score <- sapply(listeDoc,cosSim_req_1doc, req = req)
+  nomDoc <- listeDoc
+  score <- sapply(listeDoc,cosSim_req_1doc, req = req)
   
-  nomDoc <- c(listeDoc[1])
-  score <- c(cosSim_req_1doc(req, listeDoc[1]))
+#   nomDoc <- c(listeDoc[1])
+#   score <- c(cosSim_req_1doc(req, listeDoc[1]))
+#   
+#   if(length(listeDoc)>1){
+#     for(i in 2:length(listeDoc)){
+#       nomDoc <- c(nomDoc,listeDoc[i])
+#       score <- c(score, cosSim_req_1doc(req, listeDoc[i]))
+#     }
+#   }
   
-  if(length(listeDoc)>1){
-    for(i in 2:length(listeDoc)){
-      nomDoc <- c(nomDoc,listeDoc[i])
-      score <- c(score, cosSim_req_1doc(req, listeDoc[i]))
-    }
-  }
-  
-  
+  print("plus qu'a ordonné")
   ordre <- order(score, decreasing = T)
   nomDoc <- nomDoc[ordre]
   score <- score[ordre]
   
   listeDocScore <- list(nomDoc,score)
   
-  return(listeDocScore)
+  return(score)
 }
 
 
+t1 <- Sys.time() 
+cos_sim_req_doc("plombier tuyau")
+t2 <- Sys.time() 
+temps <- difftime(t2,t1)
+temps
 
 # PrepSlidWind(c(17,16,15,14,3,2,1), c("17","16","15","14","3","2","1"), 2, 0.5)
  

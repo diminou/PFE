@@ -13,6 +13,12 @@ escapeApostrophes <- cmpfun(function(string) {
   return(gsub("'", "\\'", string, fixed =T ))
 })
 
+
+
+fixEncoding <- function(string){
+  return(enc2utf8(iconv(string, from = "UTF-8", to = "ISO-8859-1")))
+}
+
 # Fonction retournant les titres des articles liés à un mot clé stemmatisé
 #   ainsi que la valeur count du lien
 # input : un mot stemmatisé
@@ -21,7 +27,7 @@ getArticlesFromWord <- function(stem){
   queryR <- paste(paste("MATCH(a:article)-[rel]-(w:word {stem:'",stem,sep=""),"'}) RETURN rel",sep="")
   resultA <- getNodes(db,queryA)
   resultR <- getRels(db,queryR)
-  title <- sapply(resultA, function(p) p$title)
+  title <- sapply(resultA, function(p) fixEncoding(p$title))
   count <- sapply(resultR, function(p) p$count)
   result=data.frame(title,count)
   return (result)
