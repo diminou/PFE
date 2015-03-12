@@ -172,12 +172,6 @@ getArtNamesFromWord <- function(word) {
   return (firstCol(getArticlesFromWord(fixEncoding(word))))
 }
 
-setDocReq("boulanger commerce")
-
-a <- c(0,1,2)
-b <- c(3,4,5,1,2,6,0)
-unique(list(a,b))
-
 
 laReunion <- function(vect){
   return (vect)
@@ -304,36 +298,11 @@ cosSim_req_1doc <- function(req, nomDoc){
   
   wordsUnique <- unique(words)
   
-  
   vectReq <- sapply(wordsUnique, TFIDF_req, req = req)
-  
-#   vectReq <- c(TFIDF_req(wordsUnique[1], req))
-#   if(length(wordsUnique)>1){
-#     for(i in 2:length(wordsUnique)){
-#       vectReq <- c(vectReq,TFIDF_req(wordsUnique[i], req))
-#     }
-#   }
-
   vectDoc <- sapply(wordsUnique,TFIDF_doc, doc = nomDoc)
 
-#   vectDoc <- c(TFIDF_doc(wordsUnique[1], nomDoc))
-#   if(length(wordsUnique)>1){
-#     for(j in 2:length(wordsUnique)){
-#       vectDoc <- c(vectDoc, TFIDF_doc(wordsUnique[j], nomDoc))
-#     } 
-#   }
-  
-#   print("taille req")
-#   print(length(wordsUnique))
-#   
-#   print("test vectDOc et vectReq même longueur")
-#   print(length(vectDoc)==length(vectReq))
-  
   res <- sim_cos(vectReq,vectDoc)
-  print("req un doc")
-#   print("vectReq, vectDoc")
-#   print(vectReq)
-#   print(vectDoc)
+
   return(res)
 }
 
@@ -346,34 +315,49 @@ cos_sim_req_doc <- function(req){
   nomDoc <- listeDoc
   score <- sapply(listeDoc,cosSim_req_1doc, req = req)
   
-#   nomDoc <- c(listeDoc[1])
-#   score <- c(cosSim_req_1doc(req, listeDoc[1]))
-#   
-#   if(length(listeDoc)>1){
-#     for(i in 2:length(listeDoc)){
-#       nomDoc <- c(nomDoc,listeDoc[i])
-#       score <- c(score, cosSim_req_1doc(req, listeDoc[i]))
-#     }
-#   }
   
-  print("plus qu'a ordonné")
+#   print("plus qu'a ordonné")
   ordre <- order(score, decreasing = T)
   nomDoc <- nomDoc[ordre]
   score <- score[ordre]
   
   listeDocScore <- list(nomDoc,score)
   
-  return(score)
+  return(listeDocScore)
 }
 
 
-t1 <- Sys.time() 
-cos_sim_req_doc("plombier tuyau")
-t2 <- Sys.time() 
-temps <- difftime(t2,t1)
-temps
+# t1 <- Sys.time() 
+cos_sim_req_doc("boulanger")
+# t2 <- Sys.time() 
+# temps <- difftime(t2,t1)
+# temps
+
+
+CategoriesFromReq <- function(req){
+  listeDocReq <- cos_sim_req_doc(req)
+  
+  # On prend les 20% les meilleurs résultats:
+  quantile <- 20*length(listeDocReq[[1]])/100
+  listeNomTempo <- listeDocReq[[1]][1:quantile]
+  listeScoreTempo <- listeDocReq[[2]][1:quantile]
+  print(listeScoreTempo[1])
+  
+  
+  res <- unique(unlist(l))
+  
+  listeScore <- lapply(listeNomTempo,getCategoriesFromArticle)
+  
+  return(res)
+}
+
+CategoriesFromReq("boulanger")
+
+retourne_vect_score <- function(vect, score){
+  return(rep(score, length(vect)))
+}
 
 # PrepSlidWind(c(17,16,15,14,3,2,1), c("17","16","15","14","3","2","1"), 2, 0.5)
- 
+# getCategoriesFromArticle(wordStem("sandwiche", language = "french"))
  
 

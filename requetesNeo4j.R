@@ -59,7 +59,7 @@ getWordsFromArticle <- function(ttr){
   print(queryR)
   resultW <- getNodes(db,queryW)
   resultR <- getRels(db,queryR)
-  stem <- sapply(resultW, function(p) p$stem)
+  stem <- sapply(resultW, function(p) fixEncoding(p$stem))
   count <- sapply(resultR, function(p) p$count)
   result=data.frame(stem,count)
   return (result)
@@ -72,7 +72,7 @@ result
 getCategoriesFromArticle <- function(titre){
   queryC <- paste(paste("MATCH(c:category)--(a:article {title:'",titre,sep=""),"'}) RETURN c",sep="")
   resultC <- getNodes(db,queryC)
-  label <- sapply(resultC, function(p) p$label)
+  label <- sapply(resultC, function(p) fixEncoding(p$label))
   result=data.frame(label)
   return (result)
 }
@@ -85,7 +85,7 @@ label="Homonymie_de_toponyme"
 getArticlesFromCategory <- function(label){
   queryA <- paste(paste("MATCH(c:category {label:'",label,sep=""),"'})--(a:article) RETURN a",sep="")
   resultA <- getNodes(db,queryA)
-  titre <- sapply(resultA, function(p) p$title)
+  titre <- sapply(resultA, function(p) fixEncoding(p$title))
   result=data.frame(titre)
   return (result)
 }
@@ -98,7 +98,7 @@ result
 getCategoriesFromWord <- function(stem){
   queryC <- paste(paste("MATCH(c:category)--(a:article)--(w:word {stem:'",stem,sep=""),"'}) RETURN c",sep="")
   resultC <- getNodes(db,queryC)
-  label <- sapply(resultC, function(p) p$label)
+  label <- sapply(resultC, function(p) fixEncoding(p$label))
   result=data.frame(label)
   return (result)
 }
@@ -110,7 +110,7 @@ result
 getWordsFromCategory <- function(label){
   queryW <- paste(paste("MATCH(c:category {label:'",label,sep=""),"'})--(a:article)--(w:word) RETURN w",sep="")
   resultW <- getNodes(db,queryW)
-  stem <- sapply(resultW, function(p) p$stem)
+  stem <- sapply(resultW, function(p) fixEncoding(p$stem))
   result=data.frame(stem)
   return (result)
 }
