@@ -1,4 +1,5 @@
 PFE<-Sys.getenv("PFE")
+Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
 source(paste(PFE, "requetesNeo4j.R", sep = "/"))
 # install.packages("devtools")
 # devtools::install_github("nicolewhite/RNeo4j")
@@ -7,17 +8,14 @@ library(tm)
 library(SnowballC)
 library(RTextTools)
 library(RNeo4j)
+library(Rcpp)
 
+
+sourceCpp(paste(PFE, "CalculScoreCategorie.cpp", sep="/"))
 
 db = startGraph("127.0.0.1:7474/db/data/")
 #  tf time frequency du mot dans le doc, nb nb de doc, df document frequency du mot
 TFIDF <- function(tf, nb, df){
-#   print("tf")
-#   print(tf)
-#   print("nb")
-#   print(nb)
-#   print("df")
-#   print(df)
   return (tf *log(nb/df))
 }
 
@@ -56,114 +54,101 @@ nombreDoc <- nbDocs()
 
 
 
+# Old fashion way 
 
-
-
-
-
-
-
-
-
-
-# retourne la liste(nom des doc dans lequel le mot est présent, vecteur semantique du mot) 
-MotSemantInterp <- function(mot){
-  ArtFrWor=getArticlesFromWord(wordStem(mot, language = "french"))
-  n = nrow(ArtFrWor)
-  df = n 
-  nDocs = nombreDoc
-  s <- rep(0,n)
-  nom <- rep("", n)
-  for(i in 1:n){
-    tf = 1 + log(as.numeric(ArtFrWor[i,2])) 
-    nom[i] <- ArtFrWor[i,1]
-    s[i] <- TFIDF(tf, nDocs, df)
-  }
-  
-# On trie les 2 vecteurs par ordre de score décroissant  
-  ordre <- order(s, decreasing = TRUE)
-  s <- s[ordre]
-  nom <- nom[ordre]
-
-
-  listeNomScore <- PrepSlidWind(vecTrie = s,nomTrie = nom, length = 100, pourcent = 0.05)
-
-  # ce qu'on faisait sans la sliding window
-#   listeNomScore <- list(nom, s)
-  return(listeNomScore)
-}
-
-
-
-# Application de la fonction MotSemantInterp a une requete (après traitement de cette dernière)
-InterpSemRequete <- function(req){
-  req <- removePunctuation(req)
-  req <- tolower(req)
-  req <- removeWords(req, stopwords("french"))
-  req <- stripWhitespace(req)
-  words <- unlist(strsplit(req, "\\s"))
-  words <- wordStem(words, language = "french")
-
-  lis <- lapply(words,MotSemantInterp )
-  return(lis)
-}
-
-# retourne true ssi la sliding window garde la séquence (<5% highest score), sinon retourne false
-SlidingWindow <- function(seq, highScore, length,  pourcent){
-  bool = FALSE
-  diff = seq[1] -seq[length] 
-  print(diff)
-  print(highScore)
-  print(pourcent)
-  if(diff < (pourcent * highScore)){
-    bool= TRUE
-  }else {
-    bool = FALSE
-  }
-  return (bool)
-}
-
-# on prépare les données pour la méthode de sliding window et on boucle en faisant varier glisser notre fenetre
-# renvoit la liste(nom, score) ppour les scores "pertinents" sans grand saut
-PrepSlidWind <- function(vecTrie, nomTrie, length, pourcent){
-  
-  if(length> length(vecTrie)){
-    lis <- list(vecTrie, nomTrie)
-  }else {
-    highScore = vecTrie[1]
-    bool = TRUE
-    i =1
-    resNom <- nomTrie[1]
-    res <-  vecTrie[1]
-    max <- length(vecTrie)
-    while(bool== TRUE){
-      seq <- vecTrie[(1 +i) :(length+i)]
-      bool <- SlidingWindow(seq,highScore, length, pourcent)
-      if(bool== TRUE){
-        res[i+1] <- vecTrie[i+1]
-        resNom[i+1] <- nomTrie[i+1]
-      }
-      
-      if(i == max -length ){
-        bool = FALSE
-      }
-      i <- i+1
-    }
-    lis <- list(resNom, res)
-  }
-
-  
-  return(lis)
-}
-
-
-
+# # retourne la liste(nom des doc dans lequel le mot est présent, vecteur semantique du mot) 
+# MotSemantInterp <- function(mot){
+#   ArtFrWor=getArticlesFromWord(wordStem(mot, language = "french"))
+#   n = nrow(ArtFrWor)
+#   df = n 
+#   nDocs = nombreDoc
+#   s <- rep(0,n)
+#   nom <- rep("", n)
+#   for(i in 1:n){
+#     tf = 1 + log(as.numeric(ArtFrWor[i,2])) 
+#     nom[i] <- ArtFrWor[i,1]
+#     s[i] <- TFIDF(tf, nDocs, df)
+#   }
+#   
+# # On trie les 2 vecteurs par ordre de score décroissant  
+#   ordre <- order(s, decreasing = TRUE)
+#   s <- s[ordre]
+#   nom <- nom[ordre]
+# 
+# 
+#   listeNomScore <- PrepSlidWind(vecTrie = s,nomTrie = nom, length = 100, pourcent = 0.05)
+# 
+#   # ce qu'on faisait sans la sliding window
+# #   listeNomScore <- list(nom, s)
+#   return(listeNomScore)
+# }
+# 
+# 
+# 
+# # Application de la fonction MotSemantInterp a une requete (après traitement de cette dernière)
+# InterpSemRequete <- function(req){
+#   req <- removePunctuation(req)
+#   req <- tolower(req)
+#   req <- removeWords(req, stopwords("french"))
+#   req <- stripWhitespace(req)
+#   words <- unlist(strsplit(req, "\\s"))
+#   words <- wordStem(words, language = "french")
+# 
+#   lis <- lapply(words,MotSemantInterp )
+#   return(lis)
+# }
+# 
+# # retourne true ssi la sliding window garde la séquence (<5% highest score), sinon retourne false
+# SlidingWindow <- function(seq, highScore, length,  pourcent){
+#   bool = FALSE
+#   diff = seq[1] -seq[length] 
+#   print(diff)
+#   print(highScore)
+#   print(pourcent)
+#   if(diff < (pourcent * highScore)){
+#     bool= TRUE
+#   }else {
+#     bool = FALSE
+#   }
+#   return (bool)
+# }
+# 
+# # on prépare les données pour la méthode de sliding window et on boucle en faisant varier glisser notre fenetre
+# # renvoit la liste(nom, score) ppour les scores "pertinents" sans grand saut
+# PrepSlidWind <- function(vecTrie, nomTrie, length, pourcent){
+#   
+#   if(length> length(vecTrie)){
+#     lis <- list(vecTrie, nomTrie)
+#   }else {
+#     highScore = vecTrie[1]
+#     bool = TRUE
+#     i =1
+#     resNom <- nomTrie[1]
+#     res <-  vecTrie[1]
+#     max <- length(vecTrie)
+#     while(bool== TRUE){
+#       seq <- vecTrie[(1 +i) :(length+i)]
+#       bool <- SlidingWindow(seq,highScore, length, pourcent)
+#       if(bool== TRUE){
+#         res[i+1] <- vecTrie[i+1]
+#         resNom[i+1] <- nomTrie[i+1]
+#       }
+#       
+#       if(i == max -length ){
+#         bool = FALSE
+#       }
+#       i <- i+1
+#     }
+#     lis <- list(resNom, res)
+#   }
+# 
+#   
+#   return(lis)
+# }
 
 
 
 firstCol <- function(datafr) {
-#  print(nrow(datafr))
-#  print(class(datafr))
   return(datafr[1])
 }
 
@@ -192,11 +177,7 @@ setDocReq <- function(req){
   words <- wordStem(words, language = "french")
 
   wordsUnique <- unique(words)
-#   print(class(wordsUnique))
-#   print(getArticlesFromWord(wordsUnique[1]))
-#   print(wordsUnique[1])
-#   print(getArtNamesFromWord(wordsUnique[1]))
-#   listeDocUnique <-  unique(lapply(wordsUnique, getArtNamesFromWord))
+
   tempo <-  sapply(wordsUnique,getArtNamesFromWord)
   vect <- NULL
   for(i in 1:length(tempo)){
@@ -205,14 +186,6 @@ setDocReq <- function(req){
   
   listeDocUnique <- vect
 
-
-#   listeDocUnique <- c(getArticlesFromWord(words[1])[,1])
-#   if(length(wordsUnique)>1){
-#     for(i in 2:length(wordsUnique)){
-#       tempo <- c(getArticlesFromWord(words[i])[,1])
-#       listeDocUnique <- union(listeDocUnique, tempo)
-#     }
-#   }
 
 print("reunion terminée")
   
@@ -285,8 +258,6 @@ TFIDF_doc <- function(word, doc){
 }
 
 
-
-
 # Calcule la similarité cosinus entre une requete et un document
 cosSim_req_1doc <- function(req, nomDoc){
   req <- removePunctuation(req)
@@ -322,13 +293,13 @@ cos_sim_req_doc <- function(req){
   score <- score[ordre]
   
   listeDocScore <- list(nomDoc,score)
-  
+
   return(listeDocScore)
 }
 
 
 # t1 <- Sys.time() 
-cos_sim_req_doc("boulanger")
+# cos_sim_req_doc("boulanger")
 # t2 <- Sys.time() 
 # temps <- difftime(t2,t1)
 # temps
@@ -336,28 +307,61 @@ cos_sim_req_doc("boulanger")
 
 CategoriesFromReq <- function(req){
   listeDocReq <- cos_sim_req_doc(req)
-  
+
   # On prend les 20% les meilleurs résultats:
-  quantile <- 20*length(listeDocReq[[1]])/100
+  quantile <- 80*length(listeDocReq[[1]])/100
   listeNomTempo <- listeDocReq[[1]][1:quantile]
   listeScoreTempo <- listeDocReq[[2]][1:quantile]
-  print(listeScoreTempo[1])
+
+  l <- lapply(listeNomTempo,getCategoriesFromArticle)
+  listeScore <- NULL
   
+  for(j in 1:length(l)){
+    tempp <- unlist(l[j])
+    scoreTempo <- rep(listeScoreTempo[j][[1]], length(tempp))
+    listeScore <- c(listeScore, scoreTempo)
+  }
   
-  res <- unique(unlist(l))
-  
-  listeScore <- lapply(listeNomTempo,getCategoriesFromArticle)
-  
-  return(res)
+  res <- unlist(l)
+
+  listeCatScore <- list(res, listeScore)
+
+    
+  return(listeCatScore)
 }
 
-CategoriesFromReq("boulanger")
+# CategoriesFromReq("boulanger")
 
-retourne_vect_score <- function(vect, score){
-  return(rep(score, length(vect)))
+getSetCateg <- function(vect){
+  return(unique(vect))
 }
 
-# PrepSlidWind(c(17,16,15,14,3,2,1), c("17","16","15","14","3","2","1"), 2, 0.5)
+
+CalculScoreCat <- function(liste){
+  setCat <- getSetCateg(liste[[1]])
+  vectNom <- liste[[1]]
+  vectScore <- liste[[2]]
+
+#   std::vector<std::string> setCat, std::vector<std::string> vectNom, std::vector<int> vectScore
+  setScore <- testonsRcpp(setCat,vectNom,vectScore)
+  ordre <- order(setScore, decreasing = TRUE)
+  setCat <- setCat[ordre]
+  setScore <- setScore[ordre]
+
+  listeCatScore <- list(setCat, setScore)
+
+  return (listeCatScore)
+}
+
+
+
+CalculScoreCat(CategoriesFromReq("boulanger levure"))
+
+
+# cos_sim_req_doc("boulanger levure")
+# cos_sim_req_doc("boulanger")
+# cos_sim_req_doc("levure")
+
 # getCategoriesFromArticle(wordStem("sandwiche", language = "french"))
  
 
