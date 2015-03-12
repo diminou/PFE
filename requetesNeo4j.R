@@ -116,3 +116,23 @@ getWordsFromCategory <- function(label){
 }
 result = getWordsFromCategory("Homonymie_de_toponyme")
 result
+
+getBroaderFromCategory <- function(label) {
+  query = paste("match (c:category {label: \"", label, "\"})-[:relates {type:'broader'}]-> (cat:category) return cat", sep = "")
+  result <- lapply(getNodes(db, query), function(x) x$label)
+  result <- sapply(unlist(result), fixEncoding)
+  if(length(result)==0){
+    result = NULL
+  }
+  return(result)
+}
+
+getRelatedFromCategory <- function(label) {
+  query = paste("match (c:category {label: \"", label, "\"})-[:relates {type:'related'}]-> (cat:category) return cat", sep = "")
+  result <- lapply(getNodes(db, query), function(x) x$label)
+  result <- sapply(unlist(result), fixEncoding)
+  if(length(result)==0){
+    result = NULL
+  }
+  return(result)
+}
