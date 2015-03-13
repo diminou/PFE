@@ -318,19 +318,23 @@ cos_sim_req_doc <- function(req){
 #   print("fin liste doc")
   score <- sapply(listeDoc,cosSim_req_1doc, req = req)
 #   print("h")
-  
+
+
+
 #   print("plus qu'a ordonné")
   ordre <- order(score, decreasing = T)
   nomDoc <- nomDoc[ordre]
   score <- score[ordre]
-  
+  if(length(score)==0){ # On traite ce cas pour si aucun mot de la requete n'existe dans la bdd
+   score <- NULL
+  }
   listeDocScore <- list(nomDoc,score)
 
   return(listeDocScore)
 }
 
 # t1 <- Sys.time()
-cos_sim_req_doc("boulanger idspofspodpod")
+cos_sim_req_doc("boulanger")
 # t2 <- Sys.time()
 # difftime(t2,t1)
 
@@ -365,7 +369,7 @@ CategoriesFromReq <- function(req){
   return(listeCatScore)
 }
 
-# CategoriesFromReq("pain")
+CategoriesFromReq("fuzifuzdifsdilfjsdl")
 # CategoriesFromReq("boulanger")
 
 getSetCateg <- function(vect){
