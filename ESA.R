@@ -154,10 +154,10 @@ nombreDoc <- nbDocs()
 
 
 firstCol <- function(datafr) {
-  print(nrow(datafr))
-  print(ncol(datafr))
+#   print(nrow(datafr))
+#   print(ncol(datafr))
   if(nrow(datafr)>0){
-    res <- datafr[1]
+    res <- datafr[,1]
   }else{
     res <- NULL
   }
@@ -179,6 +179,9 @@ fixEncoding <- function(string){
   return(enc2utf8(string))
 }
 
+
+
+
 # retourne la liste (set) des documents associés a une requete (sous la forme d'un vecteur)
 setDocReq <- function(req){
   req <- removePunctuation(req)
@@ -194,9 +197,13 @@ setDocReq <- function(req){
   
   vect <- NULL
   for(i in 1:length(tempo)){
-    vect <- union(vect, tempo[[i]])
+#     print(tempo[[i]]) 
+    if(!is.null(tempo[[i]])){
+      vect <- union(vect, tempo[[i]])
+    }
+
   }
-  
+
   listeDocUnique <- vect
 
   print("reunion terminée")
@@ -245,6 +252,10 @@ TFIDF_doc <- function(word, doc){
 #   tf <- count de word dasn doc/nb de mot dans le doc
 #   tf <- getLinkFromArticleWord(doc, word)/n
 
+#   print("doc")
+#   print(doc)
+#   print("word")
+#   print(word)
   tf <- getLinkFromArticleWord(doc, word)
 
   if(!is.null(tf)){
@@ -257,7 +268,7 @@ TFIDF_doc <- function(word, doc){
   
   nDocs = nombreDoc
   df <- getDocFreq(wordStem(word, language = "french"))
-  
+
   res =0
   res =TFIDF(tf, nDocs, df)
   return(res)
@@ -274,12 +285,11 @@ cosSim_req_1doc <- function(req, nomDoc){
   req <- stripWhitespace(req)
   words <- unlist(strsplit(req, "\\s"))
   words <- wordStem(words, language = "french")
-  
+
   wordsUnique <- unique(words)
-  
+
   vectReq <- sapply(wordsUnique, TFIDF_req, req = req)
   vectDoc <- sapply(wordsUnique,TFIDF_doc, doc = nomDoc)
-
   res <- sim_cos(vectReq,vectDoc)
 
   return(res)
@@ -292,6 +302,9 @@ cos_sim_req_doc <- function(req){
   listeDoc <- setDocReq(req)
   
   nomDoc <- listeDoc
+#   print("listeDoc")
+#   print(listeDoc)
+#   print("fin liste doc")
   score <- sapply(listeDoc,cosSim_req_1doc, req = req)
 #   print("h")
   
@@ -305,10 +318,10 @@ cos_sim_req_doc <- function(req){
   return(listeDocScore)
 }
 
-t1 <- Sys.time()
-cos_sim_req_doc("boulanger")
-t2 <- Sys.time()
-difftime(t2,t1)
+# t1 <- Sys.time()
+cos_sim_req_doc("boulanger sdlfjsfljp")
+# t2 <- Sys.time()
+# difftime(t2,t1)
 
 CategoriesFromReq <- function(req){
   listeDocReq <- cos_sim_req_doc(req)
