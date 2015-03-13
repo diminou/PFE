@@ -28,36 +28,31 @@ double TFIDF(double tf, double nb, double df){
 
 
 
-// [[Rcpp::export]]
-double sim_cos(std::vector<double> v1,  std::vector<double> v2){
-  double num =0.0;
-  double part1 =0.0;
-  double part2 =0.0;
-  
-  num = std::accumulate(v1.begin(), v1.end(),0) + std::accumulate(v2.begin(), v2.end(),0);
-  
-  std::vector<double> v1carre = carre()
-  part1 <- 
-  double res :
-  
-  return res;
-}
-
-
-double somme(std::vector<double> v1){
-  double res =0.0;
-  
-  return res;
-}
-
-std::vector<double> carre(std::vector<double> v){
-   std::vector<double> res;
-    for(int i=0; i<v.size();i++){
-      double tempo = v[i]*v[i];
-      res.push_back(tempo);
-    }
-  return res;
-}
+//// [[Rcpp::export]]
+//double sim_cos(std::vector<double> v1,  std::vector<double> v2){
+//  double num =0.0;
+//  double part1 =0.0;
+//  double part2 =0.0;
+//  
+//  num = std::accumulate(v1.begin(), v1.end(),0) + std::accumulate(v2.begin(), v2.end(),0);
+//  
+//  std::vector<double> v1carre = carre(v1)
+//  part1 = 
+//  double res :
+//  
+//  return res;
+//}
+//
+//
+//
+//std::vector<double> carre(std::vector<double> v){
+//   std::vector<double> res;
+//    for(int i=0; i<v.size();i++){
+//      double tempo = v[i]*v[i];
+//      res.push_back(tempo);
+//    }
+//  return res;
+//}
 
 
 //carre <- function(x){
