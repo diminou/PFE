@@ -13,12 +13,11 @@ library(Rcpp)
 
 sourceCpp(paste(PFE, "CalculScoreCategorie.cpp", sep="/"))
 
-# a <- c(1,2)
-# 
-# sim_cos(a, a)
-
 
 db = startGraph("127.0.0.1:7474/db/data/")
+
+
+#  Ces calculs sont mnt fait en cpp
 #  tf time frequency du mot dans le doc, nb nb de doc, df document frequency du mot
 # TFIDF <- function(tf, nb, df){
 #   return (tf *log(nb/df))
@@ -30,25 +29,26 @@ TFIDF_norm <- function(tfidf, r){
 }
 
 
-carre <- function(x){
-  return(x*x)
-}
-
-
-# calcul la similarité coinus enter 2 vecteurs v1 et v2 de même longueur (on prendra le tfidf dans noter cas.)
-sim_cos <- function(v1, v2){
-  num <- 0
-  part1 <-  0
-  part2 <-  0
-
-  num = sum(v1,v2)
-  part1 = sum(carre(v1))
-  part2 = sum(carre(v2))
-  
-  denom = (sqrt(part1)*sqrt(part2))
-  res= (num /denom)
-  return (res)
-}
+#  Ces calculs sont mnt fait en cpp
+# carre <- function(x){
+#   return(x*x)
+# }
+# 
+# 
+# # calcul la similarité coinus enter 2 vecteurs v1 et v2 de même longueur (on prendra le tfidf dans noter cas.)
+# sim_cos2 <- function(v1, v2){
+#   num <- 0
+#   part1 <-  0
+#   part2 <-  0
+# 
+#   num = sum(v1,v2)
+#   part1 = sum(carre(v1))
+#   part2 = sum(carre(v2))
+#   
+#   denom = (sqrt(part1)*sqrt(part2))
+#   res= (num /denom)
+#   return (res)
+# }
 
 # nb de doc 
 nbDocs <- function(){
@@ -190,7 +190,8 @@ setDocReq <- function(req){
 
   wordsUnique <- unique(words)
 
-  tempo <-  sapply(wordsUnique,getArtNamesFromWord)
+  tempo <-  sapply(wordsUnique,getArtNamesFromWord) # renvoit un vect de string
+  
   vect <- NULL
   for(i in 1:length(tempo)){
     vect <- union(vect, tempo[[i]])
@@ -198,15 +199,15 @@ setDocReq <- function(req){
   
   listeDocUnique <- vect
 
+  print("reunion terminée")
 
-print("reunion terminée")
-  
   return(listeDocUnique)
 }
 
 
 # calcul le TFIDF entre un mot stematisé et une requete
 TFIDF_req <- function(word, req){
+  
   req <- removePunctuation(req)
   req <- tolower(req)
   req <- removeWords(req, stopwords("french"))
@@ -226,30 +227,26 @@ TFIDF_req <- function(word, req){
   }
   
   nDocs = nombreDoc
-  ArtFrWor=getArticlesFromWord(wordStem(word, language = "french"))
-  df = nrow(ArtFrWor)
+  df <- getDocFreq(wordStem(word, language = "french"))
 
   res =0
   res =TFIDF(tf, nDocs, df)
 
- 
   
   return(res)
 }
 
 
 # calcul le TF IDF enter un mot stematisé et un document.
-TFIDF_doc <- function(word, doc){
-  
+TFIDF_doc <- function(word, doc){ 
+
 #   wfa <- getWordsFromArticle(doc)
 #   n <- nrow(wfa)
 #   tf <- count de word dasn doc/nb de mot dans le doc
 #   tf <- getLinkFromArticleWord(doc, word)/n
 
   tf <- getLinkFromArticleWord(doc, word)
-#   print("TF")  
-#   print(tf)
-#   print(word)
+
   if(!is.null(tf)){
     if(tf >0){
       tf <- 1 + log(tf)
@@ -259,19 +256,18 @@ TFIDF_doc <- function(word, doc){
   }
   
   nDocs = nombreDoc
-  ArtFrWor=getArticlesFromWord(wordStem(word, language = "french"))
-
-  df = nrow(ArtFrWor)
+  df <- getDocFreq(wordStem(word, language = "french"))
   
   res =0
   res =TFIDF(tf, nDocs, df)
-  
   return(res)
 }
 
 
 # Calcule la similarité cosinus entre une requete et un document
 cosSim_req_1doc <- function(req, nomDoc){
+
+
   req <- removePunctuation(req)
   req <- tolower(req)
   req <- removeWords(req, stopwords("french"))
@@ -297,7 +293,7 @@ cos_sim_req_doc <- function(req){
   
   nomDoc <- listeDoc
   score <- sapply(listeDoc,cosSim_req_1doc, req = req)
-  print("h")
+#   print("h")
   
 #   print("plus qu'a ordonné")
   ordre <- order(score, decreasing = T)
@@ -309,27 +305,22 @@ cos_sim_req_doc <- function(req){
   return(listeDocScore)
 }
 
-cos_sim_req_doc("boulanger pain")
-# t1 <- Sys.time() 
-# cos_sim_req_doc("boulanger")
-# t2 <- Sys.time() 
-# temps <- difftime(t2,t1)
-# temps
-
-
+t1 <- Sys.time()
+cos_sim_req_doc("boulanger")
+t2 <- Sys.time()
+difftime(t2,t1)
 
 CategoriesFromReq <- function(req){
   listeDocReq <- cos_sim_req_doc(req)
 
   # On prend les 20% les meilleurs résultats:
-print("a")
   quantile <- 80*length(listeDocReq[[1]])/100
   listeNomTempo <- listeDocReq[[1]][1:quantile]
   listeScoreTempo <- listeDocReq[[2]][1:quantile]
-# print("b")
+
   l <- lapply(listeNomTempo,getCategoriesFromArticle)
   listeScore <- NULL
-# print("c")
+
 #   print(length(l))
 #   if(length(l)>0){
     for(j in 1:length(l)){

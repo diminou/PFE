@@ -136,3 +136,12 @@ getRelatedFromCategory <- function(label) {
   }
   return(result)
 }
+
+# retourne le document frequency associé à un mot stématisé 
+getDocFreq <- function(stem){
+  query = paste("match (w:word {stem:'",stem,"'})<-- (a:article) return count(a) ", sep = "")
+  result <- cypher(db, query)
+  return(as.numeric(result$count))
+}
+
+
