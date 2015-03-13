@@ -58,7 +58,6 @@ nbDocs <- function(){
 nombreDoc <- nbDocs()
 
 
-
 # Old fashion way 
 
 # # retourne la liste(nom des doc dans lequel le mot est présent, vecteur semantique du mot) 
@@ -235,7 +234,9 @@ TFIDF_req <- function(word, req){
   
   nDocs = nombreDoc
   df <- getDocFreq(wordStem(word, language = "french"))
-
+  if(df==0){
+    df=1
+  }
   res =0
   res =TFIDF(tf, nDocs, df)
 
@@ -263,17 +264,27 @@ TFIDF_doc <- function(word, doc){
       tf <- 1 + log(tf)
     }
   }else{
-    tf <-0
+    tf <- 0
   }
+
   
   nDocs = nombreDoc
   df <- getDocFreq(wordStem(word, language = "french"))
-
+  if(df==0){
+    df=1
+  }
+ 
+  
   res =0
-  res =TFIDF(tf, nDocs, df)
+#   if(df>0){
+    res =TFIDF(tf, nDocs, df)
+#   }else 
+#   {
+#     res=1
+#   }
+ 
   return(res)
 }
-
 
 # Calcule la similarité cosinus entre une requete et un document
 cosSim_req_1doc <- function(req, nomDoc){
@@ -319,7 +330,7 @@ cos_sim_req_doc <- function(req){
 }
 
 # t1 <- Sys.time()
-cos_sim_req_doc("boulanger sdlfjsfljp")
+cos_sim_req_doc("boulanger idspofspodpod")
 # t2 <- Sys.time()
 # difftime(t2,t1)
 

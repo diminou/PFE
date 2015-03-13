@@ -43,7 +43,7 @@ double sim_cos(std::vector<double> v1,  std::vector<double> v2){
   double num =0.0;
   double part1 =0.0;
   double part2 =0.0;
-  
+      
   num = std::accumulate(v1.begin(), v1.end(),0) + std::accumulate(v2.begin(), v2.end(),0);
   
   std::vector<double> v1carre = carre(v1);
@@ -54,6 +54,8 @@ double sim_cos(std::vector<double> v1,  std::vector<double> v2){
   
   
   double denom = std::sqrt(part1) * std::sqrt(part2);
+//  std::cout<< "num" << num << "\n";
+//  std::cout<< "denom" << denom << "\n";
   double res =num/denom;
   
   return res;
