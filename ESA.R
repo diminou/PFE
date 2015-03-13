@@ -13,11 +13,16 @@ library(Rcpp)
 
 sourceCpp(paste(PFE, "CalculScoreCategorie.cpp", sep="/"))
 
+# a <- c(1,2)
+# 
+# sim_cos(a, a)
+
+
 db = startGraph("127.0.0.1:7474/db/data/")
 #  tf time frequency du mot dans le doc, nb nb de doc, df document frequency du mot
-TFIDF <- function(tf, nb, df){
-  return (tf *log(nb/df))
-}
+# TFIDF <- function(tf, nb, df){
+#   return (tf *log(nb/df))
+# }
 
 # tfidf : tfidf de la fct pcdte, r : nb de mot dans le doc (= longueur du doc)
 TFIDF_norm <- function(tfidf, r){
@@ -149,7 +154,14 @@ nombreDoc <- nbDocs()
 
 
 firstCol <- function(datafr) {
-  return(datafr[1])
+  print(nrow(datafr))
+  print(ncol(datafr))
+  if(nrow(datafr)>0){
+    res <- datafr[1]
+  }else{
+    res <- NULL
+  }
+  return(res)
 }
 
 
@@ -285,7 +297,7 @@ cos_sim_req_doc <- function(req){
   
   nomDoc <- listeDoc
   score <- sapply(listeDoc,cosSim_req_1doc, req = req)
-  
+  print("h")
   
 #   print("plus qu'a ordonné")
   ordre <- order(score, decreasing = T)
@@ -297,7 +309,7 @@ cos_sim_req_doc <- function(req){
   return(listeDocScore)
 }
 
-
+cos_sim_req_doc("boulanger pain")
 # t1 <- Sys.time() 
 # cos_sim_req_doc("boulanger")
 # t2 <- Sys.time() 
@@ -305,31 +317,40 @@ cos_sim_req_doc <- function(req){
 # temps
 
 
+
 CategoriesFromReq <- function(req){
   listeDocReq <- cos_sim_req_doc(req)
 
   # On prend les 20% les meilleurs résultats:
+print("a")
   quantile <- 80*length(listeDocReq[[1]])/100
   listeNomTempo <- listeDocReq[[1]][1:quantile]
   listeScoreTempo <- listeDocReq[[2]][1:quantile]
-
+# print("b")
   l <- lapply(listeNomTempo,getCategoriesFromArticle)
   listeScore <- NULL
-  
-  for(j in 1:length(l)){
-    tempp <- unlist(l[j])
-    scoreTempo <- rep(listeScoreTempo[j][[1]], length(tempp))
-    listeScore <- c(listeScore, scoreTempo)
-  }
-  
-  res <- unlist(l)
-
-  listeCatScore <- list(res, listeScore)
-
+# print("c")
+#   print(length(l))
+#   if(length(l)>0){
+    for(j in 1:length(l)){
+      print(l[j])
+      tempp <- unlist(l[j])
+      scoreTempo <- rep(listeScoreTempo[j][[1]], length(tempp))
+      listeScore <- c(listeScore, scoreTempo)
+    }
     
+    res <- unlist(l)
+#   }else{
+#     listeScore <- NULL
+#     res <- NULL
+#   }
+# print("c")
+  listeCatScore <- list(res, listeScore)
+# print("d")
   return(listeCatScore)
 }
 
+# CategoriesFromReq("pain")
 # CategoriesFromReq("boulanger")
 
 getSetCateg <- function(vect){
@@ -355,7 +376,7 @@ CalculScoreCat <- function(liste){
 
 
 
-CalculScoreCat(CategoriesFromReq("boulanger levure"))
+# CalculScoreCat(CategoriesFromReq("sdpofi"))
 
 
 # cos_sim_req_doc("boulanger levure")

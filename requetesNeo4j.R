@@ -70,7 +70,7 @@ result
 # Fonction retournant les labels des catégories liées à un article
 # input : titre de l'article
 getCategoriesFromArticle <- function(titre){
-  queryC <- paste(paste("MATCH(c:category)--(a:article {title:'",titre,sep=""),"'}) RETURN c",sep="")
+  queryC <- paste(paste("MATCH(c:category)--(a:article {title:'",escapeApostrophes(titre),sep=""),"'}) RETURN c",sep="")
   resultC <- getNodes(db,queryC)
   label <- sapply(resultC, function(p) fixEncoding(p$label))
   result=data.frame(label)

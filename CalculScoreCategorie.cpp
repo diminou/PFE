@@ -19,3 +19,64 @@ std::vector<double> testonsRcpp(std::vector<std::string> setCat, std::vector<std
   }  
   return vecteur;
 }
+
+// [[Rcpp::export]]
+double TFIDF(double tf, double nb, double df){
+  double res =tf *log(nb/df);
+  return res;
+}
+
+
+
+// [[Rcpp::export]]
+double sim_cos(std::vector<double> v1,  std::vector<double> v2){
+  double num =0.0;
+  double part1 =0.0;
+  double part2 =0.0;
+  
+  num = std::accumulate(v1.begin(), v1.end(),0) + std::accumulate(v2.begin(), v2.end(),0);
+  
+  std::vector<double> v1carre = carre()
+  part1 <- 
+  double res :
+  
+  return res;
+}
+
+
+double somme(std::vector<double> v1){
+  double res =0.0;
+  
+  return res;
+}
+
+std::vector<double> carre(std::vector<double> v){
+   std::vector<double> res;
+    for(int i=0; i<v.size();i++){
+      double tempo = v[i]*v[i];
+      res.push_back(tempo);
+    }
+  return res;
+}
+
+
+//carre <- function(x){
+//  return(x*x)
+//}
+//
+//
+//# calcul la similarité coinus enter 2 vecteurs v1 et v2 de même longueur (on prendra le tfidf dans noter cas.)
+//sim_cos <- function(v1, v2){
+//  num <- 0
+//  part1 <-  0
+//  part2 <-  0
+//
+//  num = sum(v1,v2)
+//  part1 = sum(carre(v1))
+//  part2 = sum(carre(v2))
+//  
+//  denom = (sqrt(part1)*sqrt(part2))
+//  res= (num /denom)
+//  return (res)
+//}
+
