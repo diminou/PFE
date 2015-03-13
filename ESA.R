@@ -166,7 +166,7 @@ firstCol <- function(datafr) {
 
 
 getArtNamesFromWord <- function(word) {
-  return (firstCol(getArticlesFromWord(fixEncoding(word))))
+  return (firstCol(getArticlesFromWord(fixEncodingESA(word))))
 }
 
 
@@ -175,7 +175,7 @@ laReunion <- function(vect){
 }
 
 
-fixEncoding <- function(string){
+fixEncodingESA <- function(string){
   return(enc2utf8(string))
 }
 
