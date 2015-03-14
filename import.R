@@ -279,7 +279,7 @@ saveBddPart <- function(part){
   outpath <-paste(dir,"short_abstracts_fr",sep="/")
   
   query = paste("USING PERIODIC COMMIT 1000
-         LOAD CSV WITH HEADERS FROM \"file:", paste(paste(outpath,i,sep=""),".csv",sep=""), "\" AS row
+         LOAD CSV WITH HEADERS FROM \"file:", paste(paste(outpath,pa,sep=""),".csv",sep=""), "\" AS row
          MERGE (:word {stem:row.word})", sep = "")
   cypher(db, query)
   print(paste(file," imported"))
