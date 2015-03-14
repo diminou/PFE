@@ -291,7 +291,7 @@ for(i in 0:37){
 saveBddBisPart <- function(part){
   dir = paste(HOME,"/.pfe/short_abstracts_fr",sep="")
   outpath <-paste(dir,"short_abstracts_fr",sep="/")
-  file <- paste(paste(outpath,i,sep=""),".csv",sep="")
+  file <- paste(paste(outpath,part,sep=""),".csv",sep="")
     query = paste("USING PERIODIC COMMIT 1000
          LOAD CSV WITH HEADERS FROM \"file:", file, "\" AS row
          MATCH (a:article {title: row.article})
