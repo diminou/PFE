@@ -15,3 +15,5 @@ getCategoriesCibles <- function(){
 }
 categoriesCibles <- getCategoriesCibles()
 head(categoriesCibles)
+
+print(cos_sim_req_doc(as.character(categoriesCibles[1, 2])))
