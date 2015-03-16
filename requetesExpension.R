@@ -20,14 +20,14 @@ escapeApostrophes <- cmpfun(function(string) {
 
 
 
-fixEncoding <- function(string){
+fixEncodingRE <- function(string){
   return(enc2utf8(iconv(string, from = "UTF-8", to = "ISO-8859-1")))
 }
 
 getCategoriesAround <- function(category_label,buffer){
   queryC <- paste(paste(paste("MATCH(c:category {label:'",category_label,sep=""),"'})-[:relates *1..",buffer,sep=""),"{type:'broader'}]-(c2:category) RETURN c2",sep="")
   resultC <- getNodes(db,queryC)
-  label <- sapply(resultC, function(p) fixEncoding(p$label))
+  label <- sapply(resultC, function(p) fixEncodingRE(p$label))
   result=data.frame(label)
   print(paste(paste("Il y a",nrow(result)),"catégories reliées"))
   return (result)
@@ -35,7 +35,7 @@ getCategoriesAround <- function(category_label,buffer){
 
 getArticlesFromCategory <- function(category_label) {
   query <- paste("match (c:category {label: '", escapeApostrophes(category_label), "'}) <-- (a:article) return a", sep = "")
-  result <- sapply(getNodes(db, query), function(x) fixEncoding(x$title))
+  result <- sapply(getNodes(db, query), function(x) fixEncodingRE(x$title))
   return(result)
 }
 
@@ -43,7 +43,7 @@ getWordsFromArticle <- function(article_title) {
   query <- paste("match (a:article {title: '", escapeApostrophes(article_title), "'}) -[r]-> (w:word) return a.title as title, r.count as count, w.stem as stem",
                  sep = "")
   result <- cypher(db, query)
-  result$w.stem <- sapply(result$w.stem, fixEncoding)
+  result$w.stem <- sapply(result$w.stem, fixEncodingRE)
   return(result)
 }
 
@@ -55,9 +55,9 @@ getWordsFromCats <- function(category_label, depth) {
                   "]-(cat:category)<--(a:article)-[r]->(w:word) return cat.label, a.title as title , r.count as count, w.stem as stem",
                       sep = "")
   result <- cypher(db, query)
-  result$w.stem <- sapply(result$w.stem, fixEncoding)
-  result$a.title <- sapply(result$a.title, fixEncoding)
-  result$cat.label <- sapply(result$cat.label, fixEncoding)
+  result$w.stem <- sapply(result$w.stem, fixEncodingRE)
+  result$a.title <- sapply(result$a.title, fixEncodingRE)
+  result$cat.label <- sapply(result$cat.label, fixEncodingRE)
   return(result)
 }
 
@@ -67,15 +67,15 @@ getWordsFromCats25K <- function(category_label, depth, offset_over_25K) {
                   escapeApostrophes(category_label),
                   "'})<-[r1 *0..",
                   depth,
-                  "]-(cat:category)<--(a:article)-[r]->(w:word) return cat.label, a.title as title, r.count as count, w.stem as stem",
+                  "]-(cat:category)<--(a:article)-[r]->(w:word) return cat.label as label, a.title as title, r.count as count, w.stem as stem ",
                   "order by cat.label desc skip ",
                   offset,
                   " limit 25000",
                   sep = "")
   result <- cypher(db, query)
-  result$w.stem <- sapply(result$w.stem, fixEncoding)
-  result$a.title <- sapply(result$a.title, fixEncoding)
-  result$cat.label <- sapply(result$cat.label, fixEncoding)
+  result$stem <- sapply(result$stem, fixEncodingRE)
+  result$title <- sapply(result$title, fixEncodingRE)
+  result$label <- sapply(result$label, fixEncodingRE)
   return(result)
 }
 
@@ -102,7 +102,7 @@ writeAllFromCat25K <- function(category_label, depth) {
 }
 
 writeAllFromCat25K('Service_public', 2)
-writeAllFromCat25K('Métier_du_bâtiment', 3)
+writeAllFromCat25K("Métier_du_bâtiment", 3)
 writeAllFromCat25K('Type_de_commerce', 5)
 # 
 # writeCategoriesCsv <- function(fileName,categories){

@@ -153,8 +153,6 @@ nombreDoc <- nbDocs()
 
 
 firstCol <- function(datafr) {
-#   print(nrow(datafr))
-#   print(ncol(datafr))
   if(nrow(datafr)>0){
     res <- datafr[,1]
   }else{
@@ -204,7 +202,6 @@ setDocReq <- function(req){
   
   vect <- NULL
   for(i in 1:length(tempo)){
-#     print(tempo[[i]]) 
     if(!is.null(tempo[[i]])){
       vect <- union(vect, tempo[[i]])
     }
@@ -228,15 +225,13 @@ TFIDF_req <- function(word, req){
   req <- stripWhitespace(req)
   words <- unlist(strsplit(req, "\\s"))
   words <- wordStem(words, language = "french")
-  words <- Filter(function(x) x!= "", words)
-  
+  words <- Filter(function(x) x!= "", words) 
   tf <-0 # nb de fois du word dans req
   for(i in 1:length(words)){
     if(words[i]==word){
       tf <- tf+1
     }
   }
-#   tf <- tf/length(words)
   if(tf >0){
     tf <- 1 + log(tf)
   }
@@ -248,29 +243,15 @@ TFIDF_req <- function(word, req){
   }
   res =0
   res =TFIDF(tf, nDocs, df)
-
-  
   return(res)
 }
 
 
 # calcul le TF IDF enter un mot stematisé et un document.
 TFIDF_doc <- function(word, doc){ 
-
-#   wfa <- getWordsFromArticle(doc)
-#   n <- nrow(wfa)
-#   tf <- count de word dasn doc/nb de mot dans le doc
-#   tf <- getLinkFromArticleWord(doc, word)/n
-
-#   print("doc")
-#   print(doc)
-#   print("word")
-#   print(word)
   tf <- getCountFromArticleWord(doc, word)
-
   if(!is.null(tf)){
-    if(!is.na(tf)){
-    
+    if(!is.na(tf)){   
       if(tf >0){
         tf <- 1 + log(tf)
       }
@@ -279,31 +260,19 @@ TFIDF_doc <- function(word, doc){
     }
   }else{
     tf <- 0
-  }
-
-  
+  }  
   nDocs = nombreDoc
   df <- getDocFreq(wordStem(word, language = "french"))
   if(df==0){
     df=1
-  }
- 
-  
+  }  
   res =0
-#   if(df>0){
-    res =TFIDF(tf, nDocs, df)
-#   }else 
-#   {
-#     res=1
-#   }
- 
+  res =TFIDF(tf, nDocs, df)
   return(res)
 }
 
 # Calcule la similarité cosinus entre une requete et un document
 cosSim_req_1doc <- function(req, nomDoc){
-
-
   req <- removePunctuation(req)
   req <- tolower(req)
   req <- removeWords(req, stopwords("french"))
@@ -328,15 +297,7 @@ cos_sim_req_doc <- function(req){
   listeDoc <- setDocReq(req)
   
   nomDoc <- listeDoc
-#   print("listeDoc")
-#   print(listeDoc)
-#   print("fin liste doc")
   score <- sapply(listeDoc,cosSim_req_1doc, req = req)
-#   print("h")
-
-
-
-#   print("plus qu'a ordonné")
   ordre <- order(score, decreasing = T)
   nomDoc <- nomDoc[ordre]
   score <- score[ordre]
