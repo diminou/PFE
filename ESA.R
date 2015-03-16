@@ -334,9 +334,10 @@ cos_sim_req_doc <- function(req){
 }
 
 # t1 <- Sys.time()
-cos_sim_req_doc("boulanger")
+ cos_sim_req_doc("boulanger")
 # t2 <- Sys.time()
 # difftime(t2,t1)
+
 
 CategoriesFromReq <- function(req){
   listeDocReq <- cos_sim_req_doc(req)
