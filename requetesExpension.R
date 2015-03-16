@@ -61,7 +61,7 @@ getWordsFromCats <- function(category_label, depth) {
 }
 
 getWordsFromCats25K <- function(category_label, depth, offset_over_25K) {
-  offset <- 25000 * offset_over_25K
+  offset <- as.integer(25000 * offset_over_25K)
   query <- paste ("match (c:category {label:'",
                   escapeApostrophes(category_label),
                   "'})<-[r1 *0..",
@@ -102,7 +102,7 @@ writeAllFromCat25K <- function(category_label, depth) {
 
 writeAllFromCat25K('Service_public', 2)
 writeAllFromCat25K('Métier_du_bâtiment', 3)
-writeAllFromCat25K('Type_de_commerce', 4)
+writeAllFromCat25K('Type_de_commerce', 5)
 
 writeCategoriesCsv <- function(fileName,categories){
   filePath <- paste(paste(paste(HOME,"/.pfe/",sep=""),fileName,sep=""),".csv",sep="")
