@@ -47,6 +47,15 @@ getLinkFromArticleWord <- function(title, stem) {
   return(as.numeric(result$count))
 }
 
+getCountFromArticleWord <- function(title, stem) {
+  q <- paste("match(:article {title:\"", title, "\"})-[r]-(:word {stem:\"", stem, "\"}) return r.count", sep = "")
+  result <- cypher(db, q)
+  if(is.null(result)){
+    return(NULL)
+  }
+  return(as.numeric(result))
+}
+
 # Fonction retournant les mots stemmatisés présents dans un article
 #   ainsi que la valeur count du lien
 # input : le titre d'un article
@@ -141,7 +150,7 @@ getRelatedFromCategory <- function(label) {
 getDocFreq <- function(stem){
   query = paste("match (w:word {stem:'",stem,"'})<-- (a:article) return count(a) ", sep = "")
   result <- cypher(db, query)
-  return(as.numeric(result$count))
+  return(as.numeric(result))
 }
 
 

@@ -168,6 +168,14 @@ getArtNamesFromWord <- function(word) {
   return (firstCol(getArticlesFromWord(fixEncodingESA(word))))
 }
 
+getArtNamesFromWord <- function(word) {
+  query = paste("match (w:word {stem: '",
+                word,
+                "'})-[r]-(a:article) return a.title", sep = "")
+  result = cypher(db, query)
+  result$a.title <- sapply(result$a.title, fixEncoding)
+  return (result$a.title)
+}
 
 laReunion <- function(vect){
   return (vect)
@@ -188,11 +196,11 @@ setDocReq <- function(req){
   req <- removeWords(req, stopwords("french"))
   req <- stripWhitespace(req)
   words <- unlist(strsplit(req, "\\s"))
+  words <- Filter(function(x) x != "", words)
   words <- wordStem(words, language = "french")
 
-  wordsUnique <- unique(words)
-
-  tempo <-  sapply(wordsUnique,getArtNamesFromWord) # renvoit un vect de string
+  wordsUnique <- as.list(unique(words))
+  tempo <-  lapply(wordsUnique,getArtNamesFromWord)# renvoit un vect de string
   
   vect <- NULL
   for(i in 1:length(tempo)){
@@ -220,6 +228,7 @@ TFIDF_req <- function(word, req){
   req <- stripWhitespace(req)
   words <- unlist(strsplit(req, "\\s"))
   words <- wordStem(words, language = "french")
+  words <- Filter(function(x) x!= "", words)
   
   tf <-0 # nb de fois du word dans req
   for(i in 1:length(words)){
@@ -257,11 +266,16 @@ TFIDF_doc <- function(word, doc){
 #   print(doc)
 #   print("word")
 #   print(word)
-  tf <- getLinkFromArticleWord(doc, word)
+  tf <- getCountFromArticleWord(doc, word)
 
   if(!is.null(tf)){
-    if(tf >0){
-      tf <- 1 + log(tf)
+    if(!is.na(tf)){
+    
+      if(tf >0){
+        tf <- 1 + log(tf)
+      }
+    } else {
+      tf <- 0
     }
   }else{
     tf <- 0
@@ -298,6 +312,7 @@ cosSim_req_1doc <- function(req, nomDoc){
   words <- wordStem(words, language = "french")
 
   wordsUnique <- unique(words)
+  wordsUnique <- Filter(function(x) x!= "", wordsUnique)
 
   vectReq <- sapply(wordsUnique, TFIDF_req, req = req)
   vectDoc <- sapply(wordsUnique,TFIDF_doc, doc = nomDoc)

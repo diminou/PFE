@@ -40,7 +40,8 @@ getArticlesFromCategory <- function(category_label) {
 }
 
 getWordsFromArticle <- function(article_title) {
-  query <- paste("match (a:article {title: '", escapeApostrophes(article_title), "'}) -[r]-> (w:word) return a.title, r.count, w.stem", sep = "")
+  query <- paste("match (a:article {title: '", escapeApostrophes(article_title), "'}) -[r]-> (w:word) return a.title as title, r.count as count, w.stem as stem",
+                 sep = "")
   result <- cypher(db, query)
   result$w.stem <- sapply(result$w.stem, fixEncoding)
   return(result)
@@ -51,7 +52,7 @@ getWordsFromCats <- function(category_label, depth) {
                   escapeApostrophes(category_label),
                   "'})<-[r1 *0..",
                   depth,
-                  "]-(cat:category)<--(a:article)-[r]->(w:word) return cat.label, a.title, r.count, w.stem",
+                  "]-(cat:category)<--(a:article)-[r]->(w:word) return cat.label, a.title as title , r.count as count, w.stem as stem",
                       sep = "")
   result <- cypher(db, query)
   result$w.stem <- sapply(result$w.stem, fixEncoding)
@@ -66,7 +67,7 @@ getWordsFromCats25K <- function(category_label, depth, offset_over_25K) {
                   escapeApostrophes(category_label),
                   "'})<-[r1 *0..",
                   depth,
-                  "]-(cat:category)<--(a:article)-[r]->(w:word) return cat.label, a.title, r.count, w.stem ",
+                  "]-(cat:category)<--(a:article)-[r]->(w:word) return cat.label, a.title as title, r.count as count, w.stem as stem",
                   "order by cat.label desc skip ",
                   offset,
                   " limit 25000",
@@ -103,22 +104,22 @@ writeAllFromCat25K <- function(category_label, depth) {
 writeAllFromCat25K('Service_public', 2)
 writeAllFromCat25K('Métier_du_bâtiment', 3)
 writeAllFromCat25K('Type_de_commerce', 5)
-
-writeCategoriesCsv <- function(fileName,categories){
-  filePath <- paste(paste(paste(HOME,"/.pfe/",sep=""),fileName,sep=""),".csv",sep="")
-  write.table(categories, file = filePath,quote=FALSE,row.names = FALSE,col.names=FALSE)
-}
-
-# Catégorie Type_de_commerce :
-Type_de_commerce <- getCategoriesAround("Type_de_commerce",5)
-writeCategoriesCsv("Type_de_commerce",Type_de_commerce)
-
-
-# Catégorie Métier_du_bâtiment :
-Metier_du_batiment <- getCategoriesAround("Métier_du_bâtiment",3)
-writeCategoriesCsv("Metier_du_batiment",Metier_du_batiment)
-
-
-# Catégorie Service_public :
-Service_public <- getCategoriesAround("Service_public",2)
-writeCategoriesCsv("Service_public",Service_public)
+# 
+# writeCategoriesCsv <- function(fileName,categories){
+#   filePath <- paste(paste(paste(HOME,"/.pfe/",sep=""),fileName,sep=""),".csv",sep="")
+#   write.table(categories, file = filePath,quote=FALSE,row.names = FALSE,col.names=FALSE)
+# }
+# 
+# # Catégorie Type_de_commerce :
+# Type_de_commerce <- getCategoriesAround("Type_de_commerce",5)
+# writeCategoriesCsv("Type_de_commerce",Type_de_commerce)
+# 
+# 
+# # Catégorie Métier_du_bâtiment :
+# Metier_du_batiment <- getCategoriesAround("Métier_du_bâtiment",3)
+# writeCategoriesCsv("Metier_du_batiment",Metier_du_batiment)
+# 
+# 
+# # Catégorie Service_public :
+# Service_public <- getCategoriesAround("Service_public",2)
+# writeCategoriesCsv("Service_public",Service_public)
