@@ -289,12 +289,12 @@ cos_sim_req_doc <- function(requete){
   
   
   docFreqs <- sapply(wordsUnique, getDocFreq)
-  freqTable <- cbind(wordsUnique, focFreqs)
+  freqTable <- cbind(wordsUnique, docFreqs)
   
   listeDoc <- setDocReq(req)
   
   nomDoc <- listeDoc
-  score <- sapply(listeDoc,cosSim_req_1doc, req = req, freq = freqTable)
+  score <- sapply(listeDoc,cosSim_req_1doc, words = words, freq = freqTable)
   ordre <- order(score, decreasing = T)
   nomDoc <- nomDoc[ordre]
   score <- score[ordre]
