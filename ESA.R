@@ -172,9 +172,6 @@ getArtNamesFromWord <- function(word) {
                 "'})-[r]-(a:article) return a.title", sep = "")
   result = cypher(db, query)
   result$a.title <- sapply(result$a.title, fixEncoding)
-  
-  print("result$a.title")
-  print(result$a.title)
   return (result$a.title)
 }
 
@@ -193,7 +190,7 @@ setDocReq <- function(words){
   
 
   wordsUnique <- as.list(unique(words))
-  tempo <-  lapply(wordsUnique,getArtNamesFromWord)# renvoit un vect de string
+  tempo <-  unlist(lapply(wordsUnique,getArtNamesFromWord)) # renvoit un vect de string
   
   vect <- NULL
   for(i in 1:length(tempo)){
@@ -205,7 +202,7 @@ setDocReq <- function(words){
 
   listeDocUnique <- vect
 
-  print("reunion terminée")
+#   print("reunion terminée")
 
   return(listeDocUnique)
 }
@@ -279,7 +276,6 @@ cosSim_req_1doc <- function(words, nomDoc, freq){
 
   return(res)
 }
-setDocReq("boulanger")
 
 # Calcule la cosinus similarité entre une requete et tous les documents qui lui sont associés.
 # retourne une liste(nom de documents associé, score) ordonnée
@@ -299,7 +295,7 @@ cos_sim_req_doc <- function(requete){
   freqTable <- cbind(wordsUnique, docFreqs)
   
   listeDoc <- setDocReq(words)
-  
+
   nomDoc <- listeDoc
   score <- sapply(listeDoc,cosSim_req_1doc, words = words, freq = freqTable)
   ordre <- order(score, decreasing = T)
@@ -314,7 +310,7 @@ cos_sim_req_doc <- function(requete){
 }
 
 # t1 <- Sys.time()
- cos_sim_req_doc("boulanger pain")
+ cos_sim_req_doc("iosufsiofusiofudo")
 # t2 <- Sys.time()
 # difftime(t2,t1)
 
@@ -333,7 +329,7 @@ CategoriesFromReq <- function(req){
 #   print(length(l))
 #   if(length(l)>0){
     for(j in 1:length(l)){
-      print(l[j])
+#       print(l[j])
       tempp <- unlist(l[j])
       scoreTempo <- rep(listeScoreTempo[j][[1]], length(tempp))
       listeScore <- c(listeScore, scoreTempo)
@@ -350,7 +346,7 @@ CategoriesFromReq <- function(req){
   return(listeCatScore)
 }
 
-CategoriesFromReq("fuzifuzdifsdilfjsdl")
+# CategoriesFromReq("fuzifuzdifsdilfjsdl")
 # CategoriesFromReq("boulanger")
 
 getSetCateg <- function(vect){

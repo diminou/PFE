@@ -49,8 +49,6 @@ getLinkFromArticleWord <- function(title, stem) {
 
 getCountFromArticleWord <- function(title, stem) {
   q <- paste("match(:article {title:\"", escapeApostrophes(title), "\"})-[r]-(:word {stem:\"", stem, "\"}) return r.count", sep = "")
-  print("q")
-  print(q)
   result <- cypher(db, q)
   if(is.null(result)){
     return(NULL)
@@ -66,8 +64,6 @@ getWordsFromArticle <- function(ttr){
   print(titre)
   queryW <- paste(paste("MATCH(a:article {title:\"",titre,sep=""),"\"})--(w:word) RETURN w",sep="")
   queryR <- paste(paste("MATCH(a:article {title:\"",titre,sep=""),"\"})-[rel]-(w:word) RETURN rel",sep="")
-  print(queryW)
-  print(queryR)
   resultW <- getNodes(db,queryW)
   resultR <- getRels(db,queryR)
   stem <- sapply(resultW, function(p) fixEncoding(p$stem))
