@@ -185,6 +185,8 @@ fixEncodingESA <- function(string){
 }
 
 
+
+# getCountFromArticleWord("_Vice_City", "auto")
 # retourne la liste (set) des documents associés a une requete (sous la forme d'un vecteur)
 setDocReq <- function(words){
   
@@ -236,9 +238,14 @@ TFIDF_req <- function(word, words, freq){
 
 # calcul le TF IDF enter un mot stematisé et un document.
 TFIDF_doc <- function(word, doc, freq){ 
-
+#   print("word")
+#   print(word)
+#   
+#   print("doc")
+#   print(doc)
   tf <- getCountFromArticleWord(doc, word)
 
+#   print("tf")
   
   if(!is.null(tf)){
     if(!is.na(tf)){   
@@ -310,7 +317,7 @@ cos_sim_req_doc <- function(requete){
 }
 
 # t1 <- Sys.time()
- cos_sim_req_doc("sfhsdfsdhfihsdf dlfhdfhds")
+ cos_sim_req_doc("4x4 pièce auto moto")
 # t2 <- Sys.time()
 # difftime(t2,t1)
 

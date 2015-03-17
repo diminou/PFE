@@ -53,6 +53,10 @@ getCountFromArticleWord <- function(title, stem) {
   if(is.null(result)){
     return(NULL)
   }
+  if (!is.null(dim(result))) {
+    result <- lapply(result, as.numeric)
+    return (sum(unlist(result)))
+  }
   return(as.numeric(result))
 }
 
