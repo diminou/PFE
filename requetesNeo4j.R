@@ -53,6 +53,9 @@ getCountFromArticleWord <- function(title, stem) {
   if(is.null(result)){
     return(NULL)
   }
+  if(class(result) != "character" ) {
+    return  (NULL)
+  }
   return(as.numeric(result))
 }
 
