@@ -310,7 +310,7 @@ cos_sim_req_doc <- function(requete){
 }
 
 # t1 <- Sys.time()
- cos_sim_req_doc("iosufsiofusiofudo")
+ cos_sim_req_doc("sfhsdfsdhfihsdf dlfhdfhds")
 # t2 <- Sys.time()
 # difftime(t2,t1)
 

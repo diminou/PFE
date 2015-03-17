@@ -124,5 +124,8 @@ comparaison <- function(req){
 
 
 # titreGoogleFromReq("boulanger")
-# cos_sim_req_doc("boulanger")
+t1 <- Sys.time()
+cos_sim_req_doc("4x4 pièce auto moto")
+t2 <- Sys.time()
 
+difftime(t2,t1)
