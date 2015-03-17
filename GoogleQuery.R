@@ -23,12 +23,7 @@ GetGoogleResults <- function(keyword, service) {
   return(results)
 }
 
-# google <- GetGoogleResults("site:fr.wikipedia.org achat pièce 4x4", "web")
-# 
-# 
-# for(i in 1:length(google$responseData$results)){
-#   print(URLdecode(URLdecode(google$responseData$results[[i]]$url)))
-# }
+
 
 collage <- function(String){
   
@@ -47,7 +42,6 @@ collage <- function(String){
 }
 
 
-
 titreGoogleFromReq <- function(req){
   google <- GetGoogleResults(paste("site:fr.wikipedia.org " , req), "web")
   vectGoogle <- NULL
@@ -59,7 +53,7 @@ titreGoogleFromReq <- function(req){
 }
 
 # titreGoogleFromReq("achat pièce 4x4")
-
+# cos_sim_req_doc("achat pièce 4x4")
 
 positionReelle <- function(liste){
   res <- NULL
@@ -100,7 +94,6 @@ comparaisonListeStr <- function(listeStr1, listeStr2, posReelle){
   }
   
   l <- list(vect, posListe1, posListe2)
-  
   return (l)
 }
 
@@ -127,70 +120,9 @@ comparaison <- function(req){
   return(l)
 }
 
-comparaison("achat pièce 4x4")
-
-
-
-
-
-
-
-
-
-
-# 
-# 
-# positionReelle <- function(liste){
-#   res <- NULL
-#   vectTitre <- liste[[1]]
-#   vectScore <- liste[[2]]
-#   vectPos <- NULL
-#   scoreCourant <- 0
-#   posCourant <- 0
-#   
-#   for(i in 1:length(vectTitre)){
-#     if(vectScore[i]==scoreCourant){
-#       vectPos[i] = posCourant
-#     }else{
-#       scoreCourant = vectScore[i]
-#       posCourant = i
-#       vectPos[i] = i      
-#     }
-#   }
-#   
-#   return(vectPos)
-# }
-# 
-# comparaison <- function(req){
-#   
-#   listeStr1 <- listeTitresRequete(req)
-#   resESA <- cos_sim_req_doc(req)
-#   listeScore <- resESA[[2]]
-#   
-#   listeStr2 <- resESA[[1]]
-#   
-#   
-#   
-#   vectPosReelle <- positionReelle(resESA)
-#   print("listeStr2")
-#   print(listeStr2)
-#   print("listeScore")
-#   print(listeScore)
-#   print("vectPosReelle")
-#   print(vectPosReelle)
-#   
-#   listeStr2 <- unlist(lapply(listeStr2, collage))
-#   #   positionReelle
-#   l <- comparaisonListeStr(listeStr1, listeStr2, vectPosReelle)
-#   return(l)
-# }
-# 
-# 
 # comparaison("boulanger")
-# 
-# 
-# # temo <-  cos_sim_req_doc("boulanger")[[2]]
-# # temo
-# # temo[64][[1]]
-# # print(listeScore[1][[1]])
+
+
+# titreGoogleFromReq("boulanger")
+# cos_sim_req_doc("boulanger")
 
