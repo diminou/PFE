@@ -162,9 +162,9 @@ firstCol <- function(datafr) {
 }
 
 
-getArtNamesFromWord <- function(word) {
-  return (firstCol(getArticlesFromWord(fixEncodingESA(word))))
-}
+# getArtNamesFromWord <- function(word) {
+#   return (firstCol(getArticlesFromWord(fixEncodingESA(word))))
+# }
 
 getArtNamesFromWord <- function(word) {
   query = paste("match (w:word {stem: '",
@@ -172,6 +172,9 @@ getArtNamesFromWord <- function(word) {
                 "'})-[r]-(a:article) return a.title", sep = "")
   result = cypher(db, query)
   result$a.title <- sapply(result$a.title, fixEncoding)
+  
+  print("result$a.title")
+  print(result$a.title)
   return (result$a.title)
 }
 
@@ -183,8 +186,6 @@ laReunion <- function(vect){
 fixEncodingESA <- function(string){
   return(enc2utf8(string))
 }
-
-
 
 
 # retourne la liste (set) des documents associés a une requete (sous la forme d'un vecteur)
@@ -225,7 +226,8 @@ TFIDF_req <- function(word, words, freq){
   }
   
   nDocs = nombreDoc
-  df <- freq[freq[,1]==word, 1]
+  df <- as.numeric(freq[freq[,1]==word, 2])
+#   print(paste("df :", df, class(df)))
   if(df==0){
     df=1
   }
@@ -237,7 +239,10 @@ TFIDF_req <- function(word, words, freq){
 
 # calcul le TF IDF enter un mot stematisé et un document.
 TFIDF_doc <- function(word, doc, freq){ 
+
   tf <- getCountFromArticleWord(doc, word)
+
+  
   if(!is.null(tf)){
     if(!is.na(tf)){   
       if(tf >0){
@@ -250,13 +255,13 @@ TFIDF_doc <- function(word, doc, freq){
     tf <- 0
   }  
   nDocs = nombreDoc
-  df <- freq[freq[,1]==word, 1]
-  print(paste("df :", df, class(df)))
+  df <- as.numeric(freq[freq[,1]==word, 2])
   if(df==0){
     df=1
   }  
   res =0
   res =TFIDF(tf, nDocs, df)
+
   return(res)
 }
 
@@ -269,11 +274,12 @@ cosSim_req_1doc <- function(words, nomDoc, freq){
 
   vectReq <- sapply(wordsUnique, TFIDF_req, words = words, freq = freq)
   vectDoc <- sapply(wordsUnique,TFIDF_doc, doc = nomDoc, freq = freq)
+
   res <- sim_cos(vectReq,vectDoc)
 
   return(res)
 }
-
+setDocReq("boulanger")
 
 # Calcule la cosinus similarité entre une requete et tous les documents qui lui sont associés.
 # retourne une liste(nom de documents associé, score) ordonnée
@@ -292,7 +298,7 @@ cos_sim_req_doc <- function(requete){
   docFreqs <- sapply(wordsUnique, getDocFreq)
   freqTable <- cbind(wordsUnique, docFreqs)
   
-  listeDoc <- setDocReq(req)
+  listeDoc <- setDocReq(words)
   
   nomDoc <- listeDoc
   score <- sapply(listeDoc,cosSim_req_1doc, words = words, freq = freqTable)
@@ -308,7 +314,7 @@ cos_sim_req_doc <- function(requete){
 }
 
 # t1 <- Sys.time()
- cos_sim_req_doc("boulanger")
+ cos_sim_req_doc("boulanger pain")
 # t2 <- Sys.time()
 # difftime(t2,t1)
 
