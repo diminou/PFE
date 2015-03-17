@@ -153,8 +153,6 @@ nombreDoc <- nbDocs()
 
 
 firstCol <- function(datafr) {
-#   print(nrow(datafr))
-#   print(ncol(datafr))
   if(nrow(datafr)>0){
     res <- datafr[,1]
   }else{
@@ -190,21 +188,14 @@ fixEncodingESA <- function(string){
 
 
 # retourne la liste (set) des documents associés a une requete (sous la forme d'un vecteur)
-setDocReq <- function(req){
-  req <- removePunctuation(req)
-  req <- tolower(req)
-  req <- removeWords(req, stopwords("french"))
-  req <- stripWhitespace(req)
-  words <- unlist(strsplit(req, "\\s"))
-  words <- Filter(function(x) x != "", words)
-  words <- wordStem(words, language = "french")
+setDocReq <- function(words){
+  
 
   wordsUnique <- as.list(unique(words))
   tempo <-  lapply(wordsUnique,getArtNamesFromWord)# renvoit un vect de string
   
   vect <- NULL
   for(i in 1:length(tempo)){
-#     print(tempo[[i]]) 
     if(!is.null(tempo[[i]])){
       vect <- union(vect, tempo[[i]])
     }
@@ -220,15 +211,8 @@ setDocReq <- function(req){
 
 
 # calcul le TFIDF entre un mot stematisé et une requete
-TFIDF_req <- function(word, req){
+TFIDF_req <- function(word, words, freq){
   
-  req <- removePunctuation(req)
-  req <- tolower(req)
-  req <- removeWords(req, stopwords("french"))
-  req <- stripWhitespace(req)
-  words <- unlist(strsplit(req, "\\s"))
-  words <- wordStem(words, language = "french")
-  words <- Filter(function(x) x!= "", words)
   
   tf <-0 # nb de fois du word dans req
   for(i in 1:length(words)){
@@ -236,41 +220,26 @@ TFIDF_req <- function(word, req){
       tf <- tf+1
     }
   }
-#   tf <- tf/length(words)
   if(tf >0){
     tf <- 1 + log(tf)
   }
   
   nDocs = nombreDoc
-  df <- getDocFreq(wordStem(word, language = "french"))
+  df <- freq[freq[,1]==word, 1]
   if(df==0){
     df=1
   }
   res =0
   res =TFIDF(tf, nDocs, df)
-
-  
   return(res)
 }
 
 
 # calcul le TF IDF enter un mot stematisé et un document.
-TFIDF_doc <- function(word, doc){ 
-
-#   wfa <- getWordsFromArticle(doc)
-#   n <- nrow(wfa)
-#   tf <- count de word dasn doc/nb de mot dans le doc
-#   tf <- getLinkFromArticleWord(doc, word)/n
-
-#   print("doc")
-#   print(doc)
-#   print("word")
-#   print(word)
+TFIDF_doc <- function(word, doc, freq){ 
   tf <- getCountFromArticleWord(doc, word)
-
   if(!is.null(tf)){
-    if(!is.na(tf)){
-    
+    if(!is.na(tf)){   
       if(tf >0){
         tf <- 1 + log(tf)
       }
@@ -279,43 +248,27 @@ TFIDF_doc <- function(word, doc){
     }
   }else{
     tf <- 0
-  }
-
-  
+  }  
   nDocs = nombreDoc
-  df <- getDocFreq(wordStem(word, language = "french"))
+  df <- freq[freq[,1]==word, 1]
+  print(paste("df :", df, class(df)))
   if(df==0){
     df=1
-  }
- 
-  
+  }  
   res =0
-#   if(df>0){
-    res =TFIDF(tf, nDocs, df)
-#   }else 
-#   {
-#     res=1
-#   }
- 
+  res =TFIDF(tf, nDocs, df)
   return(res)
 }
 
 # Calcule la similarité cosinus entre une requete et un document
-cosSim_req_1doc <- function(req, nomDoc){
-
-
-  req <- removePunctuation(req)
-  req <- tolower(req)
-  req <- removeWords(req, stopwords("french"))
-  req <- stripWhitespace(req)
-  words <- unlist(strsplit(req, "\\s"))
-  words <- wordStem(words, language = "french")
+cosSim_req_1doc <- function(words, nomDoc, freq){
+  
 
   wordsUnique <- unique(words)
   wordsUnique <- Filter(function(x) x!= "", wordsUnique)
 
-  vectReq <- sapply(wordsUnique, TFIDF_req, req = req)
-  vectDoc <- sapply(wordsUnique,TFIDF_doc, doc = nomDoc)
+  vectReq <- sapply(wordsUnique, TFIDF_req, words = words, freq = freq)
+  vectDoc <- sapply(wordsUnique,TFIDF_doc, doc = nomDoc, freq = freq)
   res <- sim_cos(vectReq,vectDoc)
 
   return(res)
@@ -324,19 +277,25 @@ cosSim_req_1doc <- function(req, nomDoc){
 
 # Calcule la cosinus similarité entre une requete et tous les documents qui lui sont associés.
 # retourne une liste(nom de documents associé, score) ordonnée
-cos_sim_req_doc <- function(req){
+cos_sim_req_doc <- function(requete){
+  req <- removePunctuation(requete)
+  req <- tolower(req)
+  req <- removeWords(req, stopwords("french"))
+  req <- stripWhitespace(req)
+  words <- unlist(strsplit(req, "\\s"))
+  words <- wordStem(words, language = "french")
+  
+  wordsUnique <- unique(words)
+  wordsUnique <- Filter(function(x) x!= "", wordsUnique)
+  
+  
+  docFreqs <- sapply(wordsUnique, getDocFreq)
+  freqTable <- cbind(wordsUnique, docFreqs)
+  
   listeDoc <- setDocReq(req)
   
   nomDoc <- listeDoc
-#   print("listeDoc")
-#   print(listeDoc)
-#   print("fin liste doc")
-  score <- sapply(listeDoc,cosSim_req_1doc, req = req)
-#   print("h")
-
-
-
-#   print("plus qu'a ordonné")
+  score <- sapply(listeDoc,cosSim_req_1doc, words = words, freq = freqTable)
   ordre <- order(score, decreasing = T)
   nomDoc <- nomDoc[ordre]
   score <- score[ordre]
