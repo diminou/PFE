@@ -251,6 +251,7 @@ TFIDF_doc <- function(word, doc, freq){
   }  
   nDocs = nombreDoc
   df <- freq[freq[,1]==word, 1]
+  print(paste("df :", df, class(df)))
   if(df==0){
     df=1
   }  
