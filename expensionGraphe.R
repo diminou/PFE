@@ -1,4 +1,4 @@
-
+# insersion des catégories cibles sous la forme d'un nouveau noeud appelé 'target'
 PFE<-Sys.getenv("PFE")
 setwd(PFE)
 Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
