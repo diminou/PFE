@@ -5,6 +5,12 @@ Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
 HOME<-Sys.getenv("HOME")
 print(HOME)
 
+library(RNeo4j)
+
+source(paste(getwd(), "ESA.R", sep="/"))
+
+### Connexion avec Neo4j ###
+db = startGraph("127.0.0.1:7474/db/data/")
 
 getCategoriesCibles <- function(){
   filePath <- paste(HOME,".pfe/categoriesCibles.csv",sep="/")
@@ -14,6 +20,24 @@ getCategoriesCibles <- function(){
   return(categoriesCibles <- data.frame(Code_rubrique_AN9,Label_Categorie_cible))
 }
 categoriesCibles <- getCategoriesCibles()
-head(categoriesCibles)
 
-print(cos_sim_req_doc(as.character(categoriesCibles[1, 2])))
+query = "CREATE CONSTRAINT ON (t:target) ASSERT t.code IS UNIQUE"
+cypher(db, query)
+
+addCatCible <- function(label,code){
+  resultsESA <- cos_sim_req_doc(label)
+  query = paste(paste("CREATE (:target {code:\"",code,sep=""),"\"})",sep="")
+  cypher(db, query)
+  
+  for(i in 1:length(resultsESA[[1]])){
+    query = paste("MATCH (a:article {title:\"",resultsESA[[1]][i],"\"})
+              MATCH (t:target {code:\"",code,"\"})
+              MERGE (a)-[:linked {pertinence:\"",resultsESA[[2]][i],"\"}]->(t)", sep = "")
+    cypher(db, query)
+  }
+}
+for(i in 1:1){
+  addCatCible(as.vector(categoriesCibles$Label_Categorie_cible[i]),categoriesCibles$Code_rubrique_AN9[i])
+}
+
+

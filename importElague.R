@@ -115,15 +115,15 @@ saveBddPartBis <- function(categoriePath,fileName,part){
   query = paste("USING PERIODIC COMMIT 1000
                 LOAD CSV WITH HEADERS FROM \"file:", path, "\" AS row
                 MATCH (a:article {title: row.a.title})
-                MATCH (w:word {stem: row.word})
+                MATCH (w:word {stem: row.stem})
                 MERGE (a)-[r:contains {count:row.count}]->(w)", sep = "")
   cypher(db, query)
   print(paste(path," imported"))
 }
 
 # Catégorie Métier_du_bâtiment :
-saveBddPart(metier_du_batiment,"Métier_du_bâtiment",0)
-saveBddPartBis(metiers_du_batiment,"Métier_du_bâtiment",0)
+saveBddPart(metier_du_batiment,"Metier_du_batiment",0)
+saveBddPartBis(metiers_du_batiment,"Metier_du_batiment",0)
 
 # Catégorie Type_de_commerce :
 for(i in 0:20){
