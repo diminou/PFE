@@ -62,7 +62,7 @@ art_cat_csv <- paste(HOME, "/.pfe/article_categories_fr.csv", sep = "/")
 
 category_relations_csv <- paste(HOME, ".pfe/skos_categories_fr.csv", sep = "/")
 
-metier_du_batiment <- paste(HOME, ".pfe/Metier_du_batiment", sep = "/")
+metier_du_batiment <- paste(HOME, ".pfe/Métier_du_bâtiment", sep = "/")
 service_public <- paste(HOME, ".pfe/Service_public", sep = "/")
 type_de_commerce <- paste(HOME, ".pfe/Type_de_commerce", sep = "/")
 
@@ -122,8 +122,8 @@ saveBddPartBis <- function(categoriePath,fileName,part){
 }
 
 # Catégorie Métier_du_bâtiment :
-saveBddPart(metier_du_batiment,"Metier_du_batiment",0)
-saveBddPartBis(metiers_du_batiment,"Metier_du_batiment",0)
+saveBddPart(metier_du_batiment,"Métier_du_bâtiment",0)
+saveBddPartBis(metier_du_batiment,"Métier_du_bâtiment",0)
 
 # Catégorie Type_de_commerce :
 for(i in 0:20){
