@@ -8,7 +8,7 @@ HOME<-Sys.getenv("HOME")
 print(HOME)
 
 ### Installation des packages ###
-source(paste(getwd(), "utils.R", sep="/"))
+#source(paste(getwd(), "utils.R", sep="/"))
 
 
 ### Importation des packages ###
@@ -75,69 +75,54 @@ query = "CREATE CONSTRAINT ON (c:category) ASSERT c.label IS UNIQUE"
 cypher(db, query)
 
 query = paste("USING PERIODIC COMMIT 1000
-              LOAD CSV WITH HEADERS FROM \"file:", art_cat_csv,"\" AS row
-              MERGE (:article {title:row.article})", sep = "")
-cypher(db, query)
-
-query = paste("USING PERIODIC COMMIT 1000
-              LOAD CSV WITH HEADERS FROM \"file:", art_cat_csv, "\" AS row
-              MERGE (:category {label:row.categorie})", sep = "")
-cypher(db, query)
-
-query = paste("USING PERIODIC COMMIT 1000
-              LOAD CSV WITH HEADERS FROM \"file:", art_cat_csv, "\" AS row
-              MATCH (a:article {title: row.article})
-              MATCH (cat:category {label: row.categorie})
-              MERGE (a)-[:is_under]->(cat)", sep = "")
+              LOAD CSV WITH HEADERS FROM \"file:", category_relations_csv, "\" AS row
+              MERGE (c0:category {label: row.cat0})
+              MERGE (c1:category {label: row.cat1})",sep = "")
 cypher(db, query)
 
 query = paste("USING PERIODIC COMMIT 1000
               LOAD CSV WITH HEADERS FROM \"file:", category_relations_csv, "\" AS row
               MATCH (c0:category {label: row.cat0})
               MATCH (c1:category {label: row.cat1})
-              MERGE (c0)-[r:relates {type:row.link}]->(c1)", sep = "")
+              MERGE (c0)-[r:relates]->(c1)
+              ON CREATE SET r.type = row.link",sep = "")
 cypher(db, query)
+
 
 query = "CREATE CONSTRAINT ON (w:word) ASSERT w.stem IS UNIQUE"
 cypher(db, query)
 
-saveBddPart <- function(categoriePath,fileName,part){
-  path = paste(paste(paste(categoriePath,fileName,sep="/"),part,sep=""),".csv",sep="")
-  query = paste("USING PERIODIC COMMIT 1000
-                LOAD CSV WITH HEADERS FROM \"file:", path, "\" AS row
-                MERGE (:word {stem:row.stem})", sep = "")
-  cypher(db, query)
-  print(paste(path," imported"))
+
+buildQuery <- function(categoryPath, filename) {
+  query <- paste("using periodic commit 1000 ",
+                 "load csv with headers from \"file:",
+                 paste(categoryPath, filename, sep = "/"),
+                 "\" as row ",
+                 "match (cat:category {label: row.label}) ",
+                 "merge (a:article {title: row.title}) ",
+                 "on create merge (cat)<-[:is_under]-(a) ",
+                 "on match merge (cat)<-[:is_under]-(a) ",
+                 "merge (w:word {stem: row.stem}) ",
+                 "on create merge (a)-[r:contains]->(w) ",
+                 "on match merge (a)-[r:contains]->(w) ",
+                 "on create set  r.count = row.count ",
+                 "on match set  r.count = row.count ",
+                 sep = '')
+  return(query)
 }
 
-saveBddPartBis <- function(categoriePath,fileName,part){
-  path = paste(paste(paste(categoriePath,fileName,sep="/"),part,sep=""),".csv",sep="")
-  query = paste("USING PERIODIC COMMIT 1000
-                LOAD CSV WITH HEADERS FROM \"file:", path, "\" AS row
-                MATCH (a:article {title: row.a.title})
-                MATCH (w:word {stem: row.stem})
-                MERGE (a)-[r:contains {count:row.count}]->(w)", sep = "")
-  cypher(db, query)
-  print(paste(path," imported"))
+importTrimmedGraph <- function(categoryPath) {
+  vectFiles <- list.files(categoryPath)
+  
+  queries <- sapply(vectFiles, buildQuery, categoryPath = categoryPath)
+  sapply(queries, function(x){ print(x)
+                               cypher(db, x)
+                               print("done")})
 }
 
-# Catégorie Métier_du_bâtiment :
-saveBddPart(metier_du_batiment,"Métier_du_bâtiment",0)
-saveBddPartBis(metier_du_batiment,"Métier_du_bâtiment",0)
+importTrimmedGraph(type_de_commerce)
+importTrimmedGraph(metier_du_batiment)
+importTrimmedGraph(service_public)
 
-# Catégorie Type_de_commerce :
-for(i in 0:20){
-  saveBddPart(type_de_commerce,"Type_de_commerce",i)
-}
-for(i in 0:20){
-  saveBddPartBis(type_de_commerce,"Type_de_commerce",i)
-}
 
-# Catégorie Service_public :
-for(i in 0:2){
-  saveBddPart(service_public,"Service_public",i)
-}
-for(i in 0:2){
-  saveBddPartBis(service_public,"Service_public",i)
-}
 
