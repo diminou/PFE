@@ -41,7 +41,7 @@ addCatCible <- function(label,code){
   }
 }
 for(i in 1:dim(categoriesCibles)[1]){
-  addCatCible(as.vector(categoriesCibles$Label_Categorie_cible[i]),categoriesCibles$Code_rubrique_AN9[i])
+  tryCatch(addCatCible(as.vector(categoriesCibles$Label_Categorie_cible[i]),categoriesCibles$Code_rubrique_AN9[i]))
 }
 
 
