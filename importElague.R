@@ -100,13 +100,10 @@ buildQuery <- function(categoryPath, filename) {
                  "\" as row ",
                  "match (cat:category {label: row.label}) ",
                  "merge (a:article {title: row.title}) ",
-                 "on create merge (cat)<-[:is_under]-(a) ",
-                 "on match merge (cat)<-[:is_under]-(a) ",
+                 "merge (cat)<-[:is_under]-(a) ",
                  "merge (w:word {stem: row.stem}) ",
-                 "on create merge (a)-[r:contains]->(w) ",
-                 "on match merge (a)-[r:contains]->(w) ",
-                 "on create set  r.count = row.count ",
-                 "on match set  r.count = row.count ",
+                 "merge (a)-[r:contains]->(w) ",
+                 "set  r.count = row.count ",
                  sep = '')
   return(query)
 }
