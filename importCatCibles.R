@@ -7,10 +7,18 @@ print(HOME)
 
 library(RNeo4j)
 
-source(paste(getwd(), "ESA.R", sep="/"))
+source(paste(PFE, "ESA.R", sep="/"))
 
 ### Connexion avec Neo4j ###
 db = startGraph("127.0.0.1:7474/db/data/")
+
+### nombre de liens a garder entre la categorie cible et les articles
+globalLinkNum <- 20
+
+### fraction de pertinence sommaire a garder entre la categorie cibles et les articles
+globalLinkQuant <- 0.2
+
+
 
 getCategoriesCibles <- function(){
   filePath <- paste(HOME,".pfe/categoriesCibles.csv",sep="/")
@@ -24,20 +32,30 @@ categoriesCibles <- getCategoriesCibles()
 query = "CREATE CONSTRAINT ON (t:target) ASSERT t.code IS UNIQUE"
 cypher(db, query)
 
+getFilteredESA <- function(query) {
+  resultsESA <- cos_sim_req_doc(query)
+  tabResults <- data.frame(cbind(resultsESA[[1]], resultsESA[[2]]))
+  tabResults <- tabResults[tabResults[,2] != Inf,]
+  tabResults[, 2] <- as.numeric(tabResults[,2])
+  total <- sum(tabResults[,2])
+  tabResults[, 3] <- cumsum(tabResults[, 2])
+  return(tabResults[tabResults[, 3] <= total * globalLinkQuant, c(1, 2)])
+}
+
 addCatCible <- function(label,code){
-  resultsESA <- cos_sim_req_doc(label)
+  resultsESA <- getFilteredESA(label)
   query = paste(paste("merge (:target {code:\"",code,sep=""),"\"})",sep="")
   cypher(db, query)
-  
-  for(i in 1:length(resultsESA[[1]])){
-    query = paste("MATCH (a:article {title:\"",resultsESA[[1]][i],"\"})
+  for(i in 1:dim(resultsESA)[1]){
+    query = paste("MATCH (a:article {title:\"",resultsESA[i, 1],"\"})
               MATCH (t:target {code:\"",code,"\"})
               MERGE (a)-[r:linked]->(t) ",
               "on create set r.pertinence = '",
-              resultsESA[[2]][i],
+              resultsESA[i, 2],
               "'",
               sep = "")
-    cypher(db, query)
+    
+    tryCatch(cypher(db, query))
   }
 }
 for(i in 1:dim(categoriesCibles)[1]){
