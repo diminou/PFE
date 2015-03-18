@@ -26,15 +26,16 @@ cypher(db, query)
 
 addCatCible <- function(label,code){
   resultsESA <- cos_sim_req_doc(label)
-  query = paste(paste("CREATE (:target {code:\"",code,sep=""),"\"})",sep="")
+  query = paste(paste("merge (:target {code:\"",code,sep=""),"\"})",sep="")
   cypher(db, query)
   
   for(i in 1:length(resultsESA[[1]])){
     query = paste("MATCH (a:article {title:\"",resultsESA[[1]][i],"\"})
               MATCH (t:target {code:\"",code,"\"})
               MERGE (a)-[r:linked]->(t) ",
-              "on create set r.pertinence = ",
+              "on create set r.pertinence = '",
               resultsESA[[2]][i],
+              "'",
               sep = "")
     cypher(db, query)
   }
