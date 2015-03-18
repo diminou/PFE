@@ -32,11 +32,14 @@ addCatCible <- function(label,code){
   for(i in 1:length(resultsESA[[1]])){
     query = paste("MATCH (a:article {title:\"",resultsESA[[1]][i],"\"})
               MATCH (t:target {code:\"",code,"\"})
-              MERGE (a)-[:linked {pertinence:\"",resultsESA[[2]][i],"\"}]->(t)", sep = "")
+              MERGE (a)-[r:linked]->(t) ",
+              "on create set r.pertinence = ",
+              resultsESA[[2]][i],
+              sep = "")
     cypher(db, query)
   }
 }
-for(i in 1:1){
+for(i in 1:dim(categoriesCibles)[1]){
   addCatCible(as.vector(categoriesCibles$Label_Categorie_cible[i]),categoriesCibles$Code_rubrique_AN9[i])
 }
 
