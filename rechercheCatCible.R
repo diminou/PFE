@@ -31,7 +31,7 @@ retrieveShortestPath <- function(title1, title2) {
   return(cypher(db, query))
 }
 
-retrieveMostPertinentPath <- function(title1, title2) {
+retrieveMostPertinentPath <- function(title1, title2, pertinence1, pertinence2) {
   query <- paste("match (a:article {title:'", escapeApostrophes(title1),
                  "'}), (b:article {title:'",
                  escapeApostrophes(title2),
@@ -45,9 +45,31 @@ retrieveMostPertinentPath <- function(title1, title2) {
   if(is.null(result)) {
     return(NULL)
   }
+  result[, 2] <- result[, 2]*pertinence1*pertinence2
   return(na.omit(result))
 }
 
+makeAllCouples <- function(vec1) {
+  grid <- expand.grid(unique(vec1),unique(vec1))
+  grid <- grid[grid[, 1] > grid[, 2], ]
+  return(grid)
+}
+
+makeAllPairsfromESA <- function(dataframe) {
+  ids <- unique(dataframe[,1])
+  grid <- expand.grid(ids, ids)
+  grid <- grid[grid[, 1] > grid[, 2], ]
+  grid[, 3] <- rep(0, dim(grid)[1])
+  for(i in 1:dim(grid)[1]){
+    grid[i, 3] <- dataframe[grid[i, 1], 2] * dataframe[grid[i, 2], 2]
+  }
+  return(grid)
+}
+
+makeAllPairsfromESA(cbind(c(1, 2, 3), c(5, 6, 7)))
+
+makeAllCouples( c(4, 4, 2, 5))
+
+retrieveMostPertinentPath("Kaufhaus_des_Westens", "Visby", 0.4, 0.3)
 
 
-retrieveMostPertinentPath("Kaufhaus_des_Westens", "Visby")
