@@ -19,6 +19,13 @@ source(paste(PFE, "requetesNeo4j.R", sep = "/"))
 ### Connexion avec Neo4j ###
 db = startGraph("127.0.0.1:7474/db/data/")
 
+adaptEsa <- function(esaList) {
+  result <- data.frame(cbind(esaList[[1]], esaList[[2]]), stringsAsFactors = F)
+  result[, 2] <- as.numeric(result[, 2])
+  result[, 1] <- as.character(result[, 1])
+  return(result)
+}
+
 retrieveShortestPath <- function(title1, title2) {
   query <- paste("match (a:article {title:'", escapeApostrophes(title1),
                  "'}), (b:article {title:'",
@@ -31,7 +38,8 @@ retrieveShortestPath <- function(title1, title2) {
   return(cypher(db, query))
 }
 
-retrieveMostPertinentPath <- function(title1, title2, pertinence1, pertinence2) {
+
+retrieveMostPertinentPath <- function(title1, title2, pertinenceProduct) {
   query <- paste("match (a:article {title:'", escapeApostrophes(title1),
                  "'}), (b:article {title:'",
                  escapeApostrophes(title2),
@@ -45,7 +53,7 @@ retrieveMostPertinentPath <- function(title1, title2, pertinence1, pertinence2) 
   if(is.null(result)) {
     return(NULL)
   }
-  result[, 2] <- result[, 2]*pertinence1*pertinence2
+  result[, 2] <- result[, 2]*pertinenceProduct
   return(na.omit(result))
 }
 
@@ -58,6 +66,8 @@ makeAllCouples <- function(vec1) {
 makeAllPairsfromESA <- function(dataframe) {
   ids <- unique(dataframe[,1])
   grid <- expand.grid(ids, ids)
+  grid[, 1] <- as.character(grid [, 1])
+  grid[, 2] <- as.character(grid [, 2])
   grid <- grid[grid[, 1] > grid[, 2], ]
   grid[, 3] <- rep(0, dim(grid)[1])
   for(i in 1:dim(grid)[1]){
@@ -66,10 +76,30 @@ makeAllPairsfromESA <- function(dataframe) {
   return(grid)
 }
 
-makeAllPairsfromESA(cbind(c(1, 2, 3), c(5, 6, 7)))
+pushBack <- function(lst, elt) {
+  result <- lst
+  result[[length(lst) + 1]] <- elt
+  return(result)
+}
 
+getAllCats <- function(grid) {
+  catFrames <- list()
+  for(i in 1:dim(grid)[1]) {
+    catFrames <- pushBack(catFrames, retrieveMostPertinentPath(grid[i, 1], grid[i, 2], grid[i, 3]))
+  }
+  return(catFrames)
+}
+
+getBestCats <- function(catsList) {
+  datamap <- Reduce(function(x, y) rbind(x, y), catsList )
+  result<- aggregate(datamap[, 2], by = list(datamap[, 1]), FUN = sum)
+  return(result[order(-result[, 2]), ])
+}
+
+getBestCats(getAllCats(makeAllPairsfromESA(adaptEsa(cos_sim_req_doc("bar tabac")))[1:10, ]))
+getAllCats(makeAllPairsfromESA(adaptEsa(cos_sim_req_doc("bar tabac")))[1:10, ])[[3]]
 makeAllCouples( c(4, 4, 2, 5))
 
-retrieveMostPertinentPath("Kaufhaus_des_Westens", "Visby", 0.4, 0.3)
+retrieveMostPertinentPath("Kaufhaus_des_Westens", "Visby", 0.4)
 
 
