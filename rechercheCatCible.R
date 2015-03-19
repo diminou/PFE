@@ -90,13 +90,17 @@ getAllCats <- function(grid) {
   return(catFrames)
 }
 
-getBestCats <- function(catsList) {
+getSortedCats <- function(catsList) {
   datamap <- Reduce(function(x, y) rbind(x, y), catsList )
   result<- aggregate(datamap[, 2], by = list(datamap[, 1]), FUN = sum)
   return(result[order(-result[, 2]), ])
 }
 
-getBestCats(getAllCats(makeAllPairsfromESA(adaptEsa(cos_sim_req_doc("bar tabac")))[1:10, ]))
+getBestCatCode <- function(query) {
+  return(getSortedCats(getAllCats(makeAllPairsfromESA(adaptEsa(cos_sim_req_doc(query)))))[1, 1])
+}
+
+getSortedCats(getAllCats(makeAllPairsfromESA(adaptEsa(cos_sim_req_doc("boulanger pain")))[1:10, ]))
 getAllCats(makeAllPairsfromESA(adaptEsa(cos_sim_req_doc("bar tabac")))[1:10, ])[[3]]
 makeAllCouples( c(4, 4, 2, 5))
 
