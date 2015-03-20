@@ -12,11 +12,19 @@ source(paste(PFE, "ESA.R", sep="/"))
 ### Connexion avec Neo4j ###
 db = startGraph("127.0.0.1:7474/db/data/")
 
+## Suppression des categories cibles deja importees
+clear <- function() {
+  query <- "match (t:target)-[r]-()
+            with t, r delete t, r"
+  cyper(db, query)
+}
+clear()
+
 ### nombre de liens a garder entre la categorie cible et les articles
 globalLinkNum <- 20
 
 ### fraction de pertinence sommaire a garder entre la categorie cibles et les articles
-globalLinkQuant <- 0.2
+globalLinkQuant <- 0.05
 
 
 
@@ -24,7 +32,7 @@ getCategoriesCibles <- function(){
   filePath <- paste(HOME,".pfe/categoriesCibles.csv",sep="/")
   data <- read.csv(filePath)
   Code_rubrique_AN9 <- data$Code_rubrique_AN9
-  Label_Categorie_cible <- paste(paste(data$Lib_rubrique_AN8,data$LibSegment30,sep=" "), "",sep=" ")#data$LibSegment5
+  Label_Categorie_cible <-  data$Lib_rubrique_AN8#paste(paste(data$Lib_rubrique_AN8,data$LibSegment30,sep=" "), "",sep=" ")#data$LibSegment5
   return(categoriesCibles <- data.frame(Code_rubrique_AN9,Label_Categorie_cible))
 }
 categoriesCibles <- getCategoriesCibles()

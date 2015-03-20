@@ -119,10 +119,13 @@ getBestCatCode <- function(query) {
 }
 
 codeToLabel <- function(code) {
+  if(is.null(code)) {
+    return (null)
+  }
   return(categoriesCibles$Label_Categorie_cible[categoriesCibles$Code_rubrique_AN9==code])
 }
 
-codeToLabel(getBestCatCode("pâtisserie brioche"))
+codeToLabel(getBestCatCode("papier de bureau"))
 
 getSortedCats(getAllCats(makeAllPairsfromESA(adaptEsa(cos_sim_req_doc("oxygène médical")))[1:globalArtNum, ]))
 getAllCats(makeAllPairsfromESA(adaptEsa(cos_sim_req_doc("bar tabac")))[1:globalArtNum, ])[[3]]
