@@ -16,6 +16,18 @@ library(RTextTools)
 source(paste(PFE, "ESA.R", sep = "/"))
 source(paste(PFE, "requetesNeo4j.R", sep = "/"))
 
+### Nombre de meilleures paires à retenir de l´ESA
+globalArtNum <- 10
+
+getCategoriesCibles <- function(){
+  filePath <- paste(HOME,".pfe/categoriesCibles.csv",sep="/")
+  data <- read.csv(filePath)
+  Code_rubrique_AN9 <- data$Code_rubrique_AN9
+  Label_Categorie_cible <- data$Lib_rubrique_AN8
+  return(categoriesCibles <- data.frame(Code_rubrique_AN9,Label_Categorie_cible))
+}
+categoriesCibles <- getCategoriesCibles()
+
 ### Connexion avec Neo4j ###
 db = startGraph("127.0.0.1:7474/db/data/")
 
@@ -101,13 +113,19 @@ getSortedCats <- function(catsList) {
 }
 
 getBestCatCode <- function(query) {
-  result <- tryCatch({return(getSortedCats(getAllCats(makeAllPairsfromESA(adaptEsa(cos_sim_req_doc(query)))))[1, 1])},
+  result <- tryCatch({return(getSortedCats(getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(cos_sim_req_doc(query)))[1:globalArtNum,])))[1, 1])},
                      error = function(e){return (NULL)})
   return(result)
 }
 
-getSortedCats(getAllCats(makeAllPairsfromESA(adaptEsa(cos_sim_req_doc("Analyses médicales")))[1:10, ]))
-getAllCats(makeAllPairsfromESA(adaptEsa(cos_sim_req_doc("bar tabac")))[1:10, ])[[3]]
+codeToLabel <- function(code) {
+  return(categoriesCibles$Label_Categorie_cible[categoriesCibles$Code_rubrique_AN9==code])
+}
+
+codeToLabel(getBestCatCode("pâtisserie brioche"))
+
+getSortedCats(getAllCats(makeAllPairsfromESA(adaptEsa(cos_sim_req_doc("oxygène médical")))[1:globalArtNum, ]))
+getAllCats(makeAllPairsfromESA(adaptEsa(cos_sim_req_doc("bar tabac")))[1:globalArtNum, ])[[3]]
 makeAllCouples( c(4, 4, 2, 5))
 
 retrieveMostPertinentPath("Kaufhaus_des_Westens", "Visby", 0.4)
