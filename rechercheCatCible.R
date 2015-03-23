@@ -125,7 +125,6 @@ getBestCatCode <- function(query) {
 }
 
 codeToLabel <- function(code) {
-  print(code)
   if(is.null(code)) {
     return(NULL)
   }
