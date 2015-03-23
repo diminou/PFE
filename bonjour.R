@@ -37,10 +37,10 @@ Top50Article <- function(req, pourcent){
   return(l)
 }
 
-cos_sim_req_doc("boulanger pain")
+# cos_sim_req_doc("boulanger pain")
 
 # CategoriesFromReq("fuzifuzdifsdilfjsdl")
-Top50Article("boulanger pain", 0.5)
+# Top50Article("boulanger pain", 0.5)
 
 
 # match (a:article {title:"Croque-monsieur"}), (b:article {title:"Jambon-beurre"})
@@ -122,7 +122,7 @@ makeAllPairsfromESA <- function(dataframe) {
   return(grid)
 }
 
-getBestCatCode <- function(query) {
+bestCategorie <- function(query) {
   result <- tryCatch({return(getSortedCats(getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(Top50Article(query, 0.5))))))[1, 1])},
                      error = function(e){return (NULL)})
 #   result <- getSortedCats(getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(Top50Article(query, 0.5))))))[1, 1]
@@ -139,9 +139,9 @@ fixEncodinCat <- function(string){
 
 
 # adaptEsa(Top50Article("boulanger pain", 0.5))[, 2]
-ff <- getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(Top50Article("boulanger sandwich", 0.5)))))
+getSortedCats(getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(Top50Article("boulanger pain", 0.5))))))[1,1]
 cos_sim_req_doc("boulanger pain")
-getBestCatCode("boulanger pain")
+bestCategorie("boulanger pain")
 fixEncodinCat(getBestCatCode("boulanger pain"))
 
 class(unlist(as.list(ff[[170]][1]))
@@ -149,42 +149,6 @@ class(unlist(as.list(ff[[170]][1]))
 adaptEsa(Top50Article("boulanger sandwich", 0.5))[,1]
 
 
-# getSetCatsArt <- function(grid) {
-#   catFrames <- list()
-#   setCat <- NULL
-#   for(i in 1:dim(grid)[1]) {
-#     setCat <- unique(c(setCat, retrieveMostPertinentPath(grid[i, 1], grid[i, 2], grid[i, 3])[,1]))
-#   }
-#   return(setCat)
-# }
-# 
-# 
-# ArtFromCat <- function(grid, cat){
-#   listeRes <- NULL
-#   for(i in 1:dim(grid)[1]) {
-#     listeTempo <- retrieveMostPertinentPath(grid[i, 1], grid[i, 2], grid[i, 3])[,1]
-# #     print(listeTempo)
-#     for(j in 1:length(listeTempo)){
-# #       print(listeTempo[j])
-#       if(listeTempo[j]==cat){
-#         temp <- c (grid[i, 1], grid[i, 2])
-#         listeRes <- union(listeRes, temp)
-#       }
-#     }
-#   }
-# return(listeRes)
-# }
-# 
-# 
-# listeCatArtFinale <- function(grid){
-#   setCat <- getSetCatsArt(grid)
-#   listeArtFrCat <- lapply(setCat, ArtFromCat, grid = grid)
-#   listeCatArt <- list(setCat, listeArtFrCat)
-#   return (listeCatArt)
-# }
-# 
-# system.time(listeCatArtFinale(na.omit(makeAllPairsfromESA(adaptEsa(Top50Article("boulanger sandwich", 0.5))))))
-# uuu[[2]][1]
 
 
 getSetCat <- function(liste){
@@ -228,10 +192,28 @@ listeCatArtFinale <- function(liste){
   return(listeRes)
 }
   
-listeCatArtFinale(getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(Top50Article("boulanger sandwich", 0.5))))))
+listeCatArtFinale(getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(Top50Article("boulanger pain", 0.5))))))
 
+
+
+
+
+
+ArtFromBestCat <- function(query){
+  listeArtBestCat <- NULL
+  listeCatArt <- listeCatArtFinale(getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(Top50Article(query, 0.5))))))
+  bestCat <-  bestCategorie(query)
+  for(i in 1:length(listeCatArt[[1]])){
+    if(listeCatArt[[1]][i]==bestCat){
+      listeArtBestCat <- listeCatArt[[2]][[i]]
+    }
+  }
   
-  
+  return(listeArtBestCat)
+}
+system.time(ArtFromBestCat("boulanger pain"))
+
+
 # catArtScore <- function(liste){
 #   listeNom <- liste[[1]]
 #   listeScore <- liste[[2]]
