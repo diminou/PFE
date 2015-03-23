@@ -58,7 +58,7 @@ db = startGraph("127.0.0.1:7474/db/data/")
 ####################################################
 
 # Définition des chemins des fichiers .csv
-art_cat_csv <- paste(HOME, "/.pfe/article_categories_fr.csv", sep = "/")
+#art_cat_csv <- paste(HOME, "/.pfe/article_categories_fr.csv", sep = "/")
 
 category_relations_csv <- paste(HOME, ".pfe/skos_categories_fr.csv", sep = "/")
 

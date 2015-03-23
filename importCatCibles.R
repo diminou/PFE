@@ -42,6 +42,9 @@ cypher(db, query)
 
 getFilteredESA <- function(query) {
   resultsESA <- cos_sim_req_doc(query)
+  if(is.null(resultsESA[[1]]) | is.null(resultsESA[[2]])) {
+    return(NULL)
+  }
   tabResults <- data.frame(cbind(resultsESA[[1]], resultsESA[[2]]))
   tabResults <- tabResults[tabResults[,2] != Inf,]
   tabResults[, 2] <- as.numeric(tabResults[,2])
@@ -54,16 +57,18 @@ addCatCible <- function(label,code){
   resultsESA <- getFilteredESA(label)
   query = paste(paste("merge (:target {code:\"",code,sep=""),"\"})",sep="")
   cypher(db, query)
-  for(i in 1:dim(resultsESA)[1]){
-    query = paste("MATCH (a:article {title:\"",resultsESA[i, 1],"\"})
-              MATCH (t:target {code:\"",code,"\"})
-              MERGE (a)-[r:linked]->(t) ",
-              "on create set r.pertinence = '",
-              resultsESA[i, 2],
-              "'",
-              sep = "")
+  if(!is.null(resultsESA)){
+    for(i in 1:dim(resultsESA)[1]){
+      query = paste("MATCH (a:article {title:\"",resultsESA[i, 1],"\"})
+                MATCH (t:target {code:\"",code,"\"})
+                MERGE (a)-[r:linked]->(t) ",
+                "on create set r.pertinence = '",
+                resultsESA[i, 2],
+                "'",
+                sep = "")
     
-    tryCatch(cypher(db, query))
+      tryCatch(cypher(db, query))
+    }
   }
 }
 for(i in 1:dim(categoriesCibles)[1]){
