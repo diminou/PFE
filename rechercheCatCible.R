@@ -183,7 +183,7 @@ getBestCat2 <- function(query){
   return(res[1, 1])
 }
 
-codeToLabel(getBestCat2("aéroclubs, école de pilotage"))
+codeToLabel(getBestCat2("sandwich"))
 
 codeToLabel(getBestCatCode("papier de bureau"))
 
