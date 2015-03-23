@@ -9,6 +9,7 @@ HOME<-Sys.getenv("HOME")
 
 
 source(paste(PFE, "ESA.R", sep = "/"))
+source(paste(PFE, "bonjour.R", sep = "/"))
 
 library(utils)
 library(RCurl)
@@ -169,6 +170,32 @@ comparaisonListeStr <- function(listeStr1, listeStr2, posReelle){
   return (l)
 }
 
+# Comparaison 2 listes de String sans pos
+comparaisonListeStr <- function(listeStr1, listeStr2, posReelle){
+  
+  vect <- NULL
+  posListe1 <- NULL
+  posListe2 <- NULL
+  
+  
+  for(i in 1:length(listeStr2)){
+    for(j in 1:length(listeStr1)){
+      if(is.null(listeStr1[j])||is.null(listeStr2[i])){
+      }
+      else{
+        if(listeStr2[i]==listeStr1[j]){
+          vect <- union(vect,listeStr1[j])
+          posListe1 <- union(posListe1,j)
+          posListe2 <- c(posListe2,posReelle[i])
+        }      
+      }
+    }
+  }
+  
+  l <- list(vect, posListe1, posListe2)
+  return (l)
+}
+
 # Comparer pour une requête
 comparaison <- function(ListResBing,resESA){
   
@@ -185,7 +212,7 @@ comparaison <- function(ListResBing,resESA){
 
 # Comparaison finale pour les requetes ambigus
 
-comparaisonFinaleAmbigu <- function(){
+comparaisonFinaleESA1Ambigu <- function(){
   res <- NULL
   count <- 0
   for (i in 1:length(ReqAmbigu)){
@@ -205,7 +232,29 @@ comparaisonFinaleAmbigu <- function(){
   print(paste(count,"/",i,sep=""))
   }  
 }
-comparaisonFinaleAmbigu()
+comparaisonFinaleESA1Ambigu()
+
+comparaisonFinaleESA2Ambigu <- function(){
+  res <- NULL
+  count <- 0
+  for (i in 1:length(ReqAmbigu)){
+    listResBing <- ResAmbigu[[i]]
+    #    print(listResBing)
+    resESA <- ArtFromBestCat(ReqAmbigu[i])
+    #    print(resESA)
+    res[[i]] <- comparaison(listResBing,resESA)
+    if(is.null(res[[i]][[1]])){
+    }
+    else{
+      count=count+1
+      print("$$$$$$ JE T'AI TROUVE ! $$$$$$")
+      print(res[[i]])
+    }
+    print(ReqAmbigu[i])
+    print(paste(count,"/",i,sep=""))
+  }  
+}
+ArtFromBestCat("boulangerie")
 
 comparaisonFinaleNonAmbigu <- function(){
   res <- NULL
@@ -214,7 +263,8 @@ comparaisonFinaleNonAmbigu <- function(){
         #print(ReqNonAmbigu[i])
     listResBing <- ResNonAmbigu[[i]]
         #print(listResBing)
-    resESA <- cos_sim_req_doc(ReqNonAmbigu[i])
+    resESA <- ArtFromBestCat(ReqNonAmbigu[i])
+#    resESA <- cos_sim_req_doc(ReqNonAmbigu[i])
         #print(resESA)
     res[[i]] <- comparaison(listResBing,resESA)
         #print(res[[i]])
@@ -229,4 +279,6 @@ comparaisonFinaleNonAmbigu <- function(){
   }  
 }
 comparaisonFinaleNonAmbigu()
+
+
 
