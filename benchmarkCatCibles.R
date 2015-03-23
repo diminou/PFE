@@ -25,7 +25,7 @@ benchmarkCategoriesCiblesFinal <- function(){
   counter <- 0
   
   for (i in 1:dim(categoriesCibles)[1]){
-    nameCat <- categoriesCibles[[2]][i]
+    nameCat <- categoriesCibles[i, 2]
     resBestCat <- codeToLabel(getBestCat2(nameCat))
     print(paste("nameCat :", nameCat))
     print(paste("resBestCat :", resBestCat))
