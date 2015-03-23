@@ -141,7 +141,6 @@ codeToLabel <- function(code) {
 ####################################################
 ### Sans la recherche de chemins les plus courts ###
 ####################################################
-match (a:article)-[r]-(t:target) return a.title, r.pertinence, t.code
 
 getCatsArticle2 <- function(artTitle, pertinence) {
   query = paste("match (a:article {title:'",
@@ -188,10 +187,10 @@ codeToLabel(getBestCat2("aéroclubs, école de pilotage"))
 
 codeToLabel(getBestCatCode("papier de bureau"))
 
-getSortedCats(getAllCats(makeAllPairsfromESA(adaptEsa(cos_sim_req_doc("oxygène médical")))[1:globalArtNum, ]))
-getAllCats(makeAllPairsfromESA(adaptEsa(cos_sim_req_doc("bar tabac")))[1:globalArtNum, ])[[3]]
-makeAllCouples( c(4, 4, 2, 5))
-
-retrieveMostPertinentPath("Kaufhaus_des_Westens", "Visby", 0.4)
+# getSortedCats(getAllCats(makeAllPairsfromESA(adaptEsa(cos_sim_req_doc("oxygène médical")))[1:globalArtNum, ]))
+# getAllCats(makeAllPairsfromESA(adaptEsa(cos_sim_req_doc("bar tabac")))[1:globalArtNum, ])[[3]]
+# makeAllCouples( c(4, 4, 2, 5))
+# 
+# retrieveMostPertinentPath("Kaufhaus_des_Westens", "Visby", 0.4)
 
 
