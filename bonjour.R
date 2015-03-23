@@ -87,13 +87,15 @@ getAllCats2 <- function(grid) {
 }
 
 
+
 getSortedCats2 <- function(catsList) {
   datamap <- Reduce(function(x, y) rbind(x, y), catsList )
-  result <- tryCatch({return(aggregate(datamap[, 2], by = list(datamap[, 1]), FUN = sum))},
+  result <- tryCatch({(aggregate(datamap[, 2], by = list(datamap[, 1]), FUN = sum))},
                      error = function(e) { return(NULL)})
   if(is.null(result)){
     return(NULL)
   }
+
   return(result[order(-result[, 2]), ])
 }
 
@@ -136,10 +138,8 @@ fixEncodinCat <- function(string){
   return(enc2utf8(iconv(string, from = "UTF-8", to = "ISO-8859-1")))
 }
 
-
-
 # adaptEsa(Top50Article("boulanger pain", 0.5))[, 2]
-# getSortedCats(getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(Top50Article("boulanger pain", 0.5))))))[1,1]
+getSortedCats2(getAllCats2(na.omit(makeAllPairsfromESA2(adaptEsa2(Top50Article("boulanger sandwich", 0.5))))))
 # cos_sim_req_doc("boulanger pain")
 # bestCategorie("boulanger pain")
 # fixEncodinCat(getBestCatCode("boulanger pain"))
@@ -161,27 +161,42 @@ getSetCat2 <- function(liste){
 # getSetCat(getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(Top50Article("boulanger sandwich", 0.5))))))
 
 
+
 getListeArt2 <- function(liste, setCat){
   listeTempo <- list()
-  
-  listeRes <- NULL
+  listeScore <- list()
+
   for(k in 1:length(setCat)){
     vectArtCat <- NULL
+    vectScoreTemp <- NULL
     for(i in 1:length(liste)){
        l <- unlist(as.list(liste[[i]][1]))
+       lscore <- unlist(as.list(liste[[i]][2]))
        l2 <- unlist(as.list(liste[[i]][3]))
        l3 <- unlist(as.list(liste[[i]][4]))
        for(j in 1:length(l)){
          if(setCat[k]==l[j]){
            vectArtTempo <- c(l2[j], l3[j])
+           testTempo <- vectArtCat
            vectArtCat <- union(vectArtCat, vectArtTempo)
+           if(!(length(testTempo)==length(vectArtCat))){
+             if(length(testTempo)==0){
+               vectScoreTemp <- c(vectScoreTemp,lscore[j], lscore[j])
+             }else{
+               vectScoreTemp <- c(vectScoreTemp,lscore[j])
+             }
+             
+           }
+           
+           
          }
        }
     }
+    listeScore <- pushBack2(listeScore, vectScoreTemp)
     listeTempo  <- pushBack2(listeTempo, vectArtCat)
   }
-  
-  return(listeTempo)
+  listeRes <- list(listeTempo,listeScore)
+  return(listeRes)
 }
 
 listeCatArtFinale2 <- function(liste){
@@ -196,21 +211,29 @@ listeCatArtFinale2 <- function(liste){
 
 
 
-
+# head(listeCatArtFinale2(getAllCats2(na.omit(makeAllPairsfromESA2(adaptEsa2(Top50Article("boulanger pain", 0.5)))))))
 
 ArtFromBestCat <- function(query){
   listeArtBestCat <- NULL
+  listeScoreArt <- NULL
   listeCatArt <- listeCatArtFinale2(getAllCats2(na.omit(makeAllPairsfromESA2(adaptEsa2(Top50Article(query, 0.5))))))
+  print("listeCatArt")
+  print(listeCatArt)
   bestCat <-  bestCategorie2(query)
   for(i in 1:length(listeCatArt[[1]])){
     if(listeCatArt[[1]][i]==bestCat){
-      listeArtBestCat <- listeCatArt[[2]][[i]]
+      listeArtBestCat <- listeCatArt[[2]][[1]][[i]]
+      listeScoreArt <- listeCatArt[[2]][[2]][[i]]
     }
   }
-  
-  return(listeArtBestCat)
+  listeRes <- list(listeArtBestCat, listeScoreArt)
+  return(listeRes)
 }
-system.time(ArtFromBestCat("boulanger pain"))
+
+# system.time(ArtFromBestCat("boulanger pain"))
+
+ArtFromBestCat("boulanger pain")
+
 
 
 # catArtScore <- function(liste){
