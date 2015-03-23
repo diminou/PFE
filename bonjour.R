@@ -49,7 +49,7 @@ Top50Article <- function(req, pourcent){
 # unwind nodes(shortestPath) as pp
 # return distinct(pp.label)
 
-retrieveMostPertinentPath <- function(title1, title2, pertinenceProduct){
+retrieveMostPertinentPath2 <- function(title1, title2, pertinenceProduct){
   query <- paste("match (a:article {title:'", escapeApostrophes(title1),
                  "'}), (b:article {title:'",
                  escapeApostrophes(title2),
@@ -70,16 +70,16 @@ result <- cbind(result, perti,t1,t2)
 }
 # retrieveMostPertinentPath("Sandwich","Pizza", 0.5)
 
-pushBack <- function(lst, elt) {
+pushBack2 <- function(lst, elt) {
   result <- lst
   result[[length(lst) + 1]] <- elt
   return(result)
 }
 
-getAllCats <- function(grid) {
+getAllCats2 <- function(grid) {
   catFrames <- list()
   for(i in 1:dim(grid)[1]) {
-    catFrames <- pushBack(catFrames, retrieveMostPertinentPath(grid[i, 1], grid[i, 2], grid[i, 3]))
+    catFrames <- pushBack2(catFrames, retrieveMostPertinentPath2(grid[i, 1], grid[i, 2], grid[i, 3]))
 #     catFrames <- pushBack(catFrames,grid[i, 1])
 #     catFrames <- pushBack(catFrames,grid[i, 2])
   }
@@ -87,7 +87,7 @@ getAllCats <- function(grid) {
 }
 
 
-getSortedCats <- function(catsList) {
+getSortedCats2 <- function(catsList) {
   datamap <- Reduce(function(x, y) rbind(x, y), catsList )
   result <- tryCatch({return(aggregate(datamap[, 2], by = list(datamap[, 1]), FUN = sum))},
                      error = function(e) { return(NULL)})
@@ -98,14 +98,14 @@ getSortedCats <- function(catsList) {
 }
 
 
-adaptEsa <- function(esaList) {
+adaptEsa2 <- function(esaList) {
   result <- data.frame(cbind(esaList[[1]], esaList[[2]]), stringsAsFactors = F)
   result[, 2] <- as.numeric(result[, 2])
   result[, 1] <- as.character(result[, 1])
   return(result)
 }
 
-makeAllPairsfromESA <- function(dataframe) {
+makeAllPairsfromESA2 <- function(dataframe) {
   ids <- unique(dataframe[,1])
   grid <- expand.grid(ids, ids)
   grid[, 1] <- as.character(grid [, 1])
@@ -122,8 +122,8 @@ makeAllPairsfromESA <- function(dataframe) {
   return(grid)
 }
 
-bestCategorie <- function(query) {
-  result <- tryCatch({return(getSortedCats(getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(Top50Article(query, 0.5))))))[1, 1])},
+bestCategorie2 <- function(query) {
+  result <- tryCatch({return(getSortedCats2(getAllCats2(na.omit(makeAllPairsfromESA2(adaptEsa2(Top50Article(query, 0.5))))))[1, 1])},
                      error = function(e){return (NULL)})
 #   result <- getSortedCats(getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(Top50Article(query, 0.5))))))[1, 1]
   return(result)
@@ -139,19 +139,19 @@ fixEncodinCat <- function(string){
 
 
 # adaptEsa(Top50Article("boulanger pain", 0.5))[, 2]
-getSortedCats(getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(Top50Article("boulanger pain", 0.5))))))[1,1]
-cos_sim_req_doc("boulanger pain")
-bestCategorie("boulanger pain")
-fixEncodinCat(getBestCatCode("boulanger pain"))
+# getSortedCats(getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(Top50Article("boulanger pain", 0.5))))))[1,1]
+# cos_sim_req_doc("boulanger pain")
+# bestCategorie("boulanger pain")
+# fixEncodinCat(getBestCatCode("boulanger pain"))
 
-class(unlist(as.list(ff[[170]][1]))
+# class(unlist(as.list(ff[[170]][1])))
 
-adaptEsa(Top50Article("boulanger sandwich", 0.5))[,1]
-
-
+# adaptEsa(Top50Article("boulanger sandwich", 0.5))[,1]
 
 
-getSetCat <- function(liste){
+
+
+getSetCat2 <- function(liste){
   setCat <- NULL;
   for(i in 1:length(liste)){
     setCat <- union(setCat, unlist(as.list(liste[[i]][1])))
@@ -161,7 +161,7 @@ getSetCat <- function(liste){
 # getSetCat(getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(Top50Article("boulanger sandwich", 0.5))))))
 
 
-getListeArt <- function(liste, setCat){
+getListeArt2 <- function(liste, setCat){
   listeTempo <- list()
   
   listeRes <- NULL
@@ -178,21 +178,20 @@ getListeArt <- function(liste, setCat){
          }
        }
     }
-    listeTempo  <- pushBack(listeTempo, vectArtCat)
+    listeTempo  <- pushBack2(listeTempo, vectArtCat)
   }
-
   
   return(listeTempo)
 }
 
-listeCatArtFinale <- function(liste){
-  s <- getSetCat(liste)
-  l <- getListeArt(liste,s)
+listeCatArtFinale2 <- function(liste){
+  s <- getSetCat2(liste)
+  l <- getListeArt2(liste,s)
   listeRes <- list(s, l)
   return(listeRes)
 }
   
-listeCatArtFinale(getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(Top50Article("boulanger pain", 0.5))))))
+# listeCatArtFinale(getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(Top50Article("boulanger pain", 0.5))))))
 
 
 
@@ -201,8 +200,8 @@ listeCatArtFinale(getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(Top50Article("
 
 ArtFromBestCat <- function(query){
   listeArtBestCat <- NULL
-  listeCatArt <- listeCatArtFinale(getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(Top50Article(query, 0.5))))))
-  bestCat <-  bestCategorie(query)
+  listeCatArt <- listeCatArtFinale2(getAllCats2(na.omit(makeAllPairsfromESA2(adaptEsa2(Top50Article(query, 0.5))))))
+  bestCat <-  bestCategorie2(query)
   for(i in 1:length(listeCatArt[[1]])){
     if(listeCatArt[[1]][i]==bestCat){
       listeArtBestCat <- listeCatArt[[2]][[i]]
