@@ -19,25 +19,29 @@ Top50Article <- function(req, pourcent){
   listeNomFinal <- NULL
   listeScoreFinal <- NULL
   scoreSeuil <- 0
-  
-  for(i in 1:length(listeNomTempo)){
-    if(somme < (pourcent*S)){
-      somme <- somme + listeScoreTempo[[i]]
-      listeNomFinal <- c(listeNomFinal, listeNomTempo[i])
-      listeScoreFinal  <- c(listeScoreFinal, listeScoreTempo[[i]])
-      scoreSeuil <- listeScoreTempo[[i]]
-    }else{
-      if(listeScoreTempo[[i]]==scoreSeuil){
+  if(is.null(listeScoreTempo)){
+    l <- NULL
+  }else{
+    for(i in 1:length(listeNomTempo)){
+      if(somme < (pourcent*S)){
+        somme <- somme + listeScoreTempo[[i]]
         listeNomFinal <- c(listeNomFinal, listeNomTempo[i])
         listeScoreFinal  <- c(listeScoreFinal, listeScoreTempo[[i]])
+        scoreSeuil <- listeScoreTempo[[i]]
+      }else{
+        if(listeScoreTempo[[i]]==scoreSeuil){
+          listeNomFinal <- c(listeNomFinal, listeNomTempo[i])
+          listeScoreFinal  <- c(listeScoreFinal, listeScoreTempo[[i]])
+        }
       }
     }
+    l <- list(listeNomFinal, listeScoreFinal)
   }
-  l <- list(listeNomFinal, listeScoreFinal)
+ 
   return(l)
 }
 
-# cos_sim_req_doc("boulanger pain")
+# cos_sim_req_doc("lrurposidposdi")
 
 # CategoriesFromReq("fuzifuzdifsdilfjsdl")
 # Top50Article("boulanger pain", 0.5)
@@ -77,60 +81,85 @@ pushBack2 <- function(lst, elt) {
 }
 
 getAllCats2 <- function(grid) {
-  catFrames <- list()
-  for(i in 1:dim(grid)[1]) {
-    catFrames <- pushBack2(catFrames, retrieveMostPertinentPath2(grid[i, 1], grid[i, 2], grid[i, 3]))
-#     catFrames <- pushBack(catFrames,grid[i, 1])
-#     catFrames <- pushBack(catFrames,grid[i, 2])
+  if(is.null(grid)){
+    return(NULL)
+  }else{
+    catFrames <- list()
+    for(i in 1:dim(grid)[1]) {
+      catFrames <- pushBack2(catFrames, retrieveMostPertinentPath2(grid[i, 1], grid[i, 2], grid[i, 3]))
+    }
+    return(catFrames)
   }
-  return(catFrames)
 }
 
 
 
 getSortedCats2 <- function(catsList) {
-  datamap <- Reduce(function(x, y) rbind(x, y), catsList )
-  result <- tryCatch({(aggregate(datamap[, 2], by = list(datamap[, 1]), FUN = sum))},
-                     error = function(e) { return(NULL)})
-  if(is.null(result)){
+  if(is.null(catsList)){
     return(NULL)
+  }else{
+    datamap <- Reduce(function(x, y) rbind(x, y), catsList )
+    result <- tryCatch({(aggregate(datamap[, 2], by = list(datamap[, 1]), FUN = sum))},
+                       error = function(e) { return(NULL)})
+    #   result <- tryCatch({(aggregate(datamap[, 2], by = list(datamap[, 1]), FUN = sum))}
+    if(is.null(result)){
+      return(NULL)
+    }
+    
+    return(result[order(-result[, 2]), ])
   }
-
-  return(result[order(-result[, 2]), ])
+ 
 }
 
 
+
 adaptEsa2 <- function(esaList) {
-  result <- data.frame(cbind(esaList[[1]], esaList[[2]]), stringsAsFactors = F)
-  result[, 2] <- as.numeric(result[, 2])
-  result[, 1] <- as.character(result[, 1])
+  if(is.null(esaList)){
+    result <- NULL
+  }else{
+    result <- data.frame(cbind(esaList[[1]], esaList[[2]]), stringsAsFactors = F)
+    result[, 2] <- as.numeric(result[, 2])
+    result[, 1] <- as.character(result[, 1])
+  }
   return(result)
 }
 
 makeAllPairsfromESA2 <- function(dataframe) {
-  ids <- unique(dataframe[,1])
-  grid <- expand.grid(ids, ids)
-  grid[, 1] <- as.character(grid [, 1])
-  grid[, 2] <- as.character(grid [, 2])
-  grid <- grid[grid[, 1] > grid[, 2], ]
-  
-  grid[, 3] <- rep(0, dim(grid)[1])
-  for(i in 1:dim(grid)[1]){
-
-    var1 = grid[i,1]
-    var2 = grid[i,2]
-    grid[i, 3] <- dataframe[dataframe[,1]==var1, 2] * dataframe[dataframe[,1]==var2, 2]
+  if(is.null(dataframe)){
+    grid <- NULL
+  }else{
+    ids <- unique(dataframe[,1])
+    grid <- expand.grid(ids, ids)
+    grid[, 1] <- as.character(grid [, 1])
+    grid[, 2] <- as.character(grid [, 2])
+    grid <- grid[grid[, 1] > grid[, 2], ]
+    
+    grid[, 3] <- rep(0, dim(grid)[1])
+    for(i in 1:dim(grid)[1]){
+      
+      var1 = grid[i,1]
+      var2 = grid[i,2]
+      grid[i, 3] <- dataframe[dataframe[,1]==var1, 2] * dataframe[dataframe[,1]==var2, 2]
+    }
   }
   return(grid)
 }
 
+naOmitAvecException <- function(param){
+  if(is.null(param)){
+    return(NULL)
+  }else{
+    return(na.omit(param))
+  }
+}
+
 bestCategorie2 <- function(query) {
-  result <- tryCatch({return(getSortedCats2(getAllCats2(na.omit(makeAllPairsfromESA2(adaptEsa2(Top50Article(query, 0.5))))))[1, 1])},
+  
+  result <- tryCatch({return(getSortedCats2(getAllCats2(naOmitAvecException(makeAllPairsfromESA2(adaptEsa2(Top50Article(query, 0.5))))))[1, 1])},
                      error = function(e){return (NULL)})
 #   result <- getSortedCats(getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(Top50Article(query, 0.5))))))[1, 1]
   return(result)
 }
-
 
 
 
@@ -139,9 +168,9 @@ fixEncodinCat <- function(string){
 }
 
 # adaptEsa(Top50Article("boulanger pain", 0.5))[, 2]
-# getSortedCats2(getAllCats2(na.omit(makeAllPairsfromESA2(adaptEsa2(Top50Article("boulanger sandwich", 0.5))))))
+# getSortedCats2(getAllCats2(naOmitAvecException(makeAllPairsfromESA2(adaptEsa2(Top50Article("idsjqspoidpoqsid", 0.5))))))
 # cos_sim_req_doc("boulanger pain")
-# bestCategorie("boulanger pain")
+# bestCategorie2("fioqsjdfskfjsdklfjsdklfj")
 # fixEncodinCat(getBestCatCode("boulanger pain"))
 
 # class(unlist(as.list(ff[[170]][1])))
@@ -163,6 +192,9 @@ getSetCat2 <- function(liste){
 
 
 getListeArt2 <- function(liste, setCat){
+  if(is.null(liste) || is.null(setCat)){
+    return (NULL)
+  }else{
   listeTempo <- list()
   listeScore <- list()
 
@@ -197,6 +229,7 @@ getListeArt2 <- function(liste, setCat){
   }
   listeRes <- list(listeTempo,listeScore)
   return(listeRes)
+  }
 }
 
 listeCatArtFinale2 <- function(liste){
@@ -216,8 +249,12 @@ listeCatArtFinale2 <- function(liste){
 ArtFromBestCat <- function(query){
   listeArtBestCat <- NULL
   listeScoreArt <- NULL
-  listeCatArt <- listeCatArtFinale2(getAllCats2(na.omit(makeAllPairsfromESA2(adaptEsa2(Top50Article(query, 0.5))))))
+  listeCatArt <- listeCatArtFinale2(getAllCats2(naOmitAvecException(makeAllPairsfromESA2(adaptEsa2(Top50Article(query, 0.5))))))
   bestCat <-  bestCategorie2(query)
+  if(is.null(listeCatArt) || is.null(bestCat)){
+    return(NULL)
+  }else{
+
   for(i in 1:length(listeCatArt[[1]])){
     if(listeCatArt[[1]][i]==bestCat){
       listeArtBestCat <- listeCatArt[[2]][[1]][[i]]
@@ -226,11 +263,12 @@ ArtFromBestCat <- function(query){
   }
   listeRes <- list(listeArtBestCat, listeScoreArt)
   return(listeRes)
+  }
 }
 
 # system.time(ArtFromBestCat("boulanger pain"))
 
-ArtFromBestCat("boulanger pain")
+# ArtFromBestCat("boulanger pain")
 
 
 
@@ -337,5 +375,5 @@ ArtFromBestCat("boulanger pain")
 # cos_sim_req_doc("boulanger")
 # cos_sim_req_doc("levure")
 
-# getCategoriesFromArticle(wordStem("sandwiche", language = "french"))
+# getCategoriesFromArticle(wordStem("sandwich", language = "french"))
 
