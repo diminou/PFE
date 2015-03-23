@@ -48,7 +48,7 @@ Top50Article <- function(req, pourcent){
 # with  p as shortestPath
 # unwind nodes(shortestPath) as pp
 # return distinct(pp.label)
-
+# match p = allShortestPaths((a)-[:is_under|relates *]-(b))
 retrieveMostPertinentPath2 <- function(title1, title2, pertinenceProduct){
   query <- paste("match (a:article {title:'", escapeApostrophes(title1),
                  "'}), (b:article {title:'",
@@ -62,10 +62,10 @@ retrieveMostPertinentPath2 <- function(title1, title2, pertinenceProduct){
   if(is.null(result)) {
     return(NULL)
   }
-perti <- rep(pertinenceProduct, nrow(result))
-t1 <- rep(title1, nrow(result))
-t2 <- rep(title2, nrow(result))
-result <- cbind(result, perti,t1,t2)
+  perti <- rep(pertinenceProduct, nrow(result))
+  t1 <- rep(title1, nrow(result))
+  t2 <- rep(title2, nrow(result))
+  result <- cbind(result, perti,t1,t2)
   return(na.omit(result))
 }
 # retrieveMostPertinentPath("Sandwich","Pizza", 0.5)

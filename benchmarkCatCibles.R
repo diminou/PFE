@@ -27,9 +27,10 @@ benchmarkCategoriesCiblesFinal <- function(){
   for (i in 1:dim(categoriesCibles)[1]){
     nameCat <- categoriesCibles[[2]][i]
     resBestCat <- codeToLabel(getBestCat2(nameCat))
-    
+    print(paste("nameCat :", nameCat))
+    print(paste("resBestCat :", resBestCat))
     if(!is.null(resBestCat)){
-      if(resCat==resBestCat){
+      if(nameCat==resBestCat){
         counter=counter+1
         print("GAGNE MDR")
       }
