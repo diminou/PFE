@@ -37,7 +37,7 @@ benchmarkCategoriesCiblesFinal <- function(){
     }
     
   }
-  return (paste(counter,"/",dim(categoriesCibles)),sep="")
+  return (paste(counter,"/",dim(categoriesCibles),sep=""))
 }
 benchmarkCategoriesCiblesFinal()
 
