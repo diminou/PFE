@@ -139,7 +139,7 @@ fixEncodinCat <- function(string){
 }
 
 # adaptEsa(Top50Article("boulanger pain", 0.5))[, 2]
-getSortedCats2(getAllCats2(na.omit(makeAllPairsfromESA2(adaptEsa2(Top50Article("boulanger sandwich", 0.5))))))
+# getSortedCats2(getAllCats2(na.omit(makeAllPairsfromESA2(adaptEsa2(Top50Article("boulanger sandwich", 0.5))))))
 # cos_sim_req_doc("boulanger pain")
 # bestCategorie("boulanger pain")
 # fixEncodinCat(getBestCatCode("boulanger pain"))
@@ -217,8 +217,6 @@ ArtFromBestCat <- function(query){
   listeArtBestCat <- NULL
   listeScoreArt <- NULL
   listeCatArt <- listeCatArtFinale2(getAllCats2(na.omit(makeAllPairsfromESA2(adaptEsa2(Top50Article(query, 0.5))))))
-  print("listeCatArt")
-  print(listeCatArt)
   bestCat <-  bestCategorie2(query)
   for(i in 1:length(listeCatArt[[1]])){
     if(listeCatArt[[1]][i]==bestCat){
