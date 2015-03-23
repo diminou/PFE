@@ -33,6 +33,12 @@ db = startGraph("127.0.0.1:7474/db/data/")
 
 adaptEsa <- function(esaList) {
   result <- data.frame(cbind(esaList[[1]], esaList[[2]]), stringsAsFactors = F)
+  if(is.null(esaList[[1]])|is.null(esaList[[2]])) {
+    return(NULL)
+  }
+  if(is.null(dim(result))) {
+    return(NULL)
+  }
   result[, 2] <- as.numeric(result[, 2])
   result[, 1] <- as.character(result[, 1])
   return(result)
@@ -119,11 +125,66 @@ getBestCatCode <- function(query) {
 }
 
 codeToLabel <- function(code) {
+  print(code)
+  if(is.null(code)) {
+    return(NULL)
+  }
   if(is.null(code)) {
     return (null)
   }
-  return(categoriesCibles$Label_Categorie_cible[categoriesCibles$Code_rubrique_AN9==code])
+  return(tryCatch({return(categoriesCibles$Label_Categorie_cible[categoriesCibles$Code_rubrique_AN9==code])},
+                  error = function(e) {
+    return(NULL)
+  }))
 }
+
+####################################################
+### Sans la recherche de chemins les plus courts ###
+####################################################
+match (a:article)-[r]-(t:target) return a.title, r.pertinence, t.code
+
+getCatsArticle2 <- function(artTitle, pertinence) {
+  query = paste("match (a:article {title:'",
+                escapeApostrophes(artTitle),
+                "'})-[r]-(t:target) return a.title as title, r.pertinence as pertinence, t.code as code", sep = "")
+  result <- cypher(db, query)
+  if(is.null(dim(result))) {
+    return(NULL)
+  }
+  if(dim(result)[1] == 0) {
+    return (NULL)
+  }
+  result$pertinence <- as.numeric(result$pertinence)*pertinence
+  return(result)
+}
+
+getCatsQuery2 <- function(query){
+  articles <- adaptEsa(cos_sim_req_doc(query))
+  result <- list()
+  if(is.null(dim(articles))) {
+    return(NULL)
+  }
+  for(i in 1:dim(articles)[1]) {
+    result <- pushBack(result, getCatsArticle2(articles[i, 1], articles[i, 2]))
+  }
+  mergeAll <- Reduce(function(x, y) rbind(x, y), result)
+  finRes <- tryCatch({return(aggregate(mergeAll[, 2], by = list(mergeAll[, 3]), FUN = sum))},
+                     error = function(e) { return(NULL)})
+  if(is.null(result)){
+    return(NULL)
+  }
+  return(finRes[, ])
+}
+
+getBestCat2 <- function(query){
+  res <- getCatsQuery2(query)
+  if(is.null(dim(res))) {
+    return(NULL)
+  }
+  return(res[1, 1])
+}
+
+codeToLabel(getBestCat2("aéroclubs, école de pilotage"))
 
 codeToLabel(getBestCatCode("papier de bureau"))
 
