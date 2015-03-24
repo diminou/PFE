@@ -18,6 +18,7 @@ source(paste(PFE, "requetesNeo4j.R", sep = "/"))
 
 ### Nombre de meilleures paires à retenir de l´ESA
 globalArtNum <- 10
+pathLimit <- 25
 
 getCategoriesCibles <- function(){
   filePath <- paste(HOME,".pfe/categoriesCibles.csv",sep="/")
@@ -52,7 +53,8 @@ retrieveShortestPath <- function(title1, title2) {
                   unwind nodes(p)  as cd
                   with collect(cd.code) as res
                   unwind res as r
-                  return r", sep = "")
+                  return r limit ",
+                 pathLimit, sep = "")
   return(cypher(db, query))
 }
 
@@ -66,7 +68,8 @@ retrieveMostPertinentPath <- function(title1, title2, pertinenceProduct) {
                  with  p as shortestPath, reduce(accum = 1.0, r in relationships(p) | accum * tofloat(r.pertinence)) as weight
                  order by weight desc
                  unwind nodes(shortestPath) as pp
-                 return distinct(pp.code), weight", sep = "")
+                 return distinct(pp.code) as code, weight limit ", pathLimit,
+                 sep = "")
   result <- cypher(db,query)
   if(is.null(result)) {
     return(NULL)
@@ -119,7 +122,7 @@ getSortedCats <- function(catsList) {
 }
 
 getBestCatCode <- function(query) {
-  result <- tryCatch({return(getSortedCats(getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(cos_sim_req_doc(query)))[1:globalArtNum,])))[1, 1])},
+  result <- tryCatch({return(getSortedCats(getAllCats(na.omit(makeAllPairsfromESA(adaptEsa(cos_sim_req_doc(query))[1:globalArtNum,]))))[1, 1])},
                      error = function(e){return (NULL)})
   return(result)
 }

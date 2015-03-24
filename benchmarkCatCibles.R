@@ -12,7 +12,7 @@ library(utils)
 library(RCurl)
 library(rjson)
 
-log <- paste(HOME, ".pfe/benchmarkCatCibles.log", sep = "/")
+log <- paste(HOME, ".pfe/benchmarkCatCibles1.log", sep = "/")
 
 dim(categoriesCibles)[1]
 
@@ -29,7 +29,7 @@ benchmarkCategoriesCiblesFinal <- function(){
     print(date())
     print(paste("i : ", i, sep = ""))
     nameCat <- categoriesCibles[i, 2]
-    resBestCat <- codeToLabel(getBestCat2(nameCat))
+    resBestCat <- codeToLabel(getBestCatCode(nameCat))
     if(!is.null(resBestCat)){
       if(nameCat==resBestCat){
         print(paste("nameCat :", nameCat))
