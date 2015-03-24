@@ -252,7 +252,7 @@ ArtFromBestCat <- function(query){
   listeCatArt <- listeCatArtFinale2(getAllCats2(naOmitAvecException(makeAllPairsfromESA2(adaptEsa2(Top50Article(query, 0.5))))))
   bestCat <-  bestCategorie2(query)
   if(is.null(listeCatArt) || is.null(bestCat)){
-    return(NULL)
+    return(list(NULL, NULL))
   }else{
 
   for(i in 1:length(listeCatArt[[1]])){
@@ -268,8 +268,8 @@ ArtFromBestCat <- function(query){
 
 # system.time(ArtFromBestCat("boulanger pain"))
 
-# ArtFromBestCat("boulanger pain")
-
+ArtFromBestCat("pain boulanger")
+cos_sim_req_doc("sdfsfsdfsdfs")
 
 
 # catArtScore <- function(liste){
